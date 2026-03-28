@@ -14,16 +14,171 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          messages: Json | null
+          target_name: string | null
+          target_personality: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          messages?: Json | null
+          target_name?: string | null
+          target_personality?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          messages?: Json | null
+          target_name?: string | null
+          target_personality?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      names: {
+        Row: {
+          age_range: string | null
+          country: string | null
+          created_at: string
+          examples: string[] | null
+          id: number
+          name: string
+          personality: Json
+          style: string | null
+          success_rate: number | null
+        }
+        Insert: {
+          age_range?: string | null
+          country?: string | null
+          created_at?: string
+          examples?: string[] | null
+          id?: number
+          name: string
+          personality?: Json
+          style?: string | null
+          success_rate?: number | null
+        }
+        Update: {
+          age_range?: string | null
+          country?: string | null
+          created_at?: string
+          examples?: string[] | null
+          id?: number
+          name?: string
+          personality?: Json
+          style?: string | null
+          success_rate?: number | null
+        }
+        Relationships: []
+      }
+      success_metrics: {
+        Row: {
+          created_at: string
+          dates_obtained: number | null
+          id: string
+          messages_sent: number | null
+          responses_received: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dates_obtained?: number | null
+          id?: string
+          messages_sent?: number | null
+          responses_received?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dates_obtained?: number | null
+          id?: string
+          messages_sent?: number | null
+          responses_received?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          language: string | null
+          quiz_results: Json | null
+          style: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          language?: string | null
+          quiz_results?: Json | null
+          style?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          language?: string | null
+          quiz_results?: Json | null
+          style?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +305,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
