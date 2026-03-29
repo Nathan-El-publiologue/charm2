@@ -1,95 +1,107 @@
 
 
-# CharmAI - Respectful Dating Coach
+# Plan: Ajouter toutes les fonctionnalités proposées
 
-## Overview
-A mobile-first dating coach app built with React + Vite + Tailwind + Supabase (Lovable Cloud). Uses Lovable AI (Gemini) for coaching. French-only at launch. PWA-installable.
+## Scope
 
-## Architecture
+6 nouvelles fonctionnalités pour CharmAI:
+1. **Mode Entraînement** - Conversation simulée avec l'IA jouant le rôle cible
+2. **Gamification** - XP, niveaux, badges, défis quotidiens, streaks
+3. **Analyseur de Profil Dating** - Upload capture profil Tinder/Bumble pour feedback IA
+4. **Favoris** - Sauvegarder les messages générés qui marchent bien
+5. **Onboarding guidé** - Tour interactif pour les nouveaux utilisateurs
+6. **Page Profil** - Vue profil utilisateur avec progression et stats
 
-### Pages & Routing
-- `/login` — Auth page (email/password + Google OAuth)
-- `/` — Home with Personality Quiz (5 questions → Direct/Flirty/Playful/Serious score)
-- `/chat` — AI Chat Coach (streaming responses via Lovable AI)
-- `/search` — Name Search (lookup personality profiles from Supabase)
-- `/analyzer` — Screenshot Analyzer (upload image → AI analysis of conversation metrics)
-- `/generator` — Message Generator (icebreakers + anti-ghosting follow-ups)
-- `/guide` — Dating Guide (tips & best practices)
-- `/dashboard` — Success Tracking (messages sent/accepted, dates obtained)
-- `/admin` — Admin Panel (protected, manage name database + test APIs)
+## Database Changes (1 migration)
 
-### Backend (Supabase Edge Functions)
-- `chat` — Streaming AI coaching via Lovable AI gateway
-- `analyze-screenshot` — Image analysis via Lovable AI (Gemini vision)
-- `generate-messages` — Structured message generation with personality context
+```sql
+-- Table favoris
+CREATE TABLE public.favorites (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  message text NOT NULL,
+  category varchar(50),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
+-- RLS: users CRUD own favorites
 
-### Database Schema
-- **names** — 50 pre-seeded profiles (name, personality JSONB, style, country, age_range, success_rate, examples)
-- **user_profiles** — Quiz results, style preferences, language
-- **conversations** — Chat history per user
-- **success_metrics** — Track messages sent, responses received, dates obtained
-- **user_roles** — Admin role management (secure, separate table)
+-- Table gamification
+CREATE TABLE public.user_gamification (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  xp integer DEFAULT 0,
+  level integer DEFAULT 1,
+  streak_days integer DEFAULT 0,
+  last_active_date date,
+  badges jsonb DEFAULT '[]',
+  daily_challenge_completed boolean DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.user_gamification ENABLE ROW LEVEL SECURITY;
+-- RLS: users CRUD own gamification
 
-### Authentication
-- Email/password + Google OAuth via Lovable Cloud
-- Protected routes with auth guard
-- Admin panel restricted to admin role
+-- Add onboarding_completed to user_profiles
+ALTER TABLE public.user_profiles ADD COLUMN onboarding_completed boolean DEFAULT false;
+```
 
-## Features Detail
+Trigger `handle_new_user` updated to also create a `user_gamification` row.
 
-### 1. Personality Quiz (Home)
-- 5 animated cards with multiple-choice questions
-- Framer Motion transitions between questions
-- Results: personality type score (Direct/Flirty/Playful/Serious)
-- Saved to user profile, influences all AI prompts
+## Edge Function
 
-### 2. AI Chat Coach
-- Streaming chat interface with markdown rendering
-- AI uses structured prompts: ROLE (dating coach matching user style) + CONTEXT (target name/personality) + GOAL
-- Returns 3 exact messages + explanation of why each works
-- Chat history persisted in Supabase
+- **`simulate-chat`** - New edge function for training mode. Same streaming pattern as `chat` but with a different system prompt where the AI plays the role of a target person based on selected personality.
+- **`analyze-profile`** - New edge function for dating profile analysis (reuses vision model like `analyze-screenshot`).
 
-### 3. Name Search
-- Search Supabase names database by name, country, style
-- Display personality cards with glassmorphism design
-- Inject personality data into AI coaching context
+## New Pages & Components
 
-### 4. Screenshot Analyzer
-- Upload conversation screenshot
-- AI vision analysis: response time patterns, emoji ratio, tone score, interest level
-- Visual metrics dashboard with animated charts
+| File | Purpose |
+|------|---------|
+| `src/pages/Training.tsx` | Conversation simulation - select a profile from DB, chat with AI playing that person |
+| `src/pages/ProfileAnalyzer.tsx` | Upload dating app profile screenshot for AI feedback |
+| `src/pages/Favorites.tsx` | List saved messages with category filter and search |
+| `src/pages/Profile.tsx` | User profile with XP bar, level badge, streak counter, stats |
+| `src/components/OnboardingTour.tsx` | Step-by-step overlay tour (5 steps highlighting key features) |
+| `src/components/XPNotification.tsx` | Animated XP gain popup |
+| `src/components/LevelBadge.tsx` | Level display component with rank name |
+| `src/hooks/useGamification.ts` | Hook to track XP, award badges, check streaks, daily challenges |
 
-### 5. Message Generator
-- Category selector: Icebreakers, Follow-ups, Anti-ghosting, Compliments
-- AI generates 3 options based on user style + target personality
-- Copy-to-clipboard functionality
+## Gamification System
 
-### 6. Success Dashboard
-- Track: messages sent, responses received, dates obtained
-- AI learns from success patterns
-- Visual progress charts
+- **XP Awards**: Send message (+10), complete quiz (+50), use generator (+15), analyze screenshot (+20), complete daily challenge (+30)
+- **Levels**: Apprenti (0-99), Débutant (100-299), Charmeur (300-599), Expert (600-999), Maître du Charme (1000+)
+- **Badges**: jsonb array in user_gamification (e.g., "first_message", "quiz_completed", "streak_7", "100_messages")
+- **Daily Challenges**: Rotating list of simple tasks ("Envoie un compliment aujourd'hui", "Utilise le générateur", etc.)
+- **Streaks**: Track consecutive days of activity
 
-### 7. Admin Panel
-- Protected route (admin role check)
-- CRUD for names database
-- API health check for AI endpoints
+## Navigation Updates
 
-## UI/Design
-- Mobile-first (360px primary viewport)
-- Glassmorphism cards with backdrop blur
-- Framer Motion page transitions and micro-interactions
-- shadcn/ui components throughout
-- Dark/warm color palette suitable for dating app
-- Bottom navigation bar for main sections
-- PWA manifest + service worker for installability
+- Bottom nav stays at 5 items (Home, Coach, Profils, Messages, Stats)
+- Add access to Training, Favorites, Profile, ProfileAnalyzer via the Home page as feature cards
+- Profile page accessible via avatar/icon in top bar of AppLayout
 
-## Data Seeding
-- 50 French/African name profiles with personality data, cultural context, and example approaches
+## Routing (App.tsx)
 
-## Security
-- All AI calls server-side via edge functions
-- Zod validation on all inputs
-- RLS policies on all tables
-- Admin role in separate user_roles table
-- Rate limiting awareness (429/402 handling)
+Add routes: `/training`, `/profile-analyzer`, `/favorites`, `/profile`
+
+## Onboarding Flow
+
+- Shows on first login (checks `onboarding_completed` in user_profiles)
+- 5 steps with backdrop overlay highlighting each nav item
+- Marks complete in DB when dismissed
+
+## Integration Points
+
+- Generator page: Add "save to favorites" heart icon on each generated message
+- Chat page: Award XP on message send
+- All pages: XP notification component mounted globally
+- AppLayout: Add profile avatar link in header
+
+## Technical Details
+
+- All new edge functions follow existing CORS + error handling patterns
+- `simulate-chat` streams like `chat` function but with roleplay system prompt
+- `analyze-profile` returns structured JSON like `analyze-screenshot`
+- Gamification hook uses Supabase realtime for instant XP updates
+- Onboarding uses Framer Motion for step animations with portal overlay
 
