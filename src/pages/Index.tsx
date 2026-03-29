@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ArrowRight, Check, Sparkles, Dumbbell, Camera, BookmarkHeart, BookOpen } from "lucide-react";
+import { Heart, ArrowRight, Check, Sparkles, Dumbbell, Camera, BookHeart, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";

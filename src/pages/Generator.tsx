@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Copy, Check, MessageSquare, Ghost, Heart, Flame, BookmarkHeart } from "lucide-react";
+import { Sparkles, Copy, Check, MessageSquare, Ghost, Heart, Flame, BookHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AppLayout } from "@/components/AppLayout";
