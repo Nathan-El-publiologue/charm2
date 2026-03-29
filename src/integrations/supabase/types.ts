@@ -44,6 +44,30 @@ export type Database = {
         }
         Relationships: []
       }
+      favorites: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       names: {
         Row: {
           age_range: string | null
@@ -110,6 +134,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_gamification: {
+        Row: {
+          badges: Json | null
+          created_at: string
+          daily_challenge_completed: boolean | null
+          id: string
+          last_active_date: string | null
+          level: number | null
+          streak_days: number | null
+          updated_at: string
+          user_id: string
+          xp: number | null
+        }
+        Insert: {
+          badges?: Json | null
+          created_at?: string
+          daily_challenge_completed?: boolean | null
+          id?: string
+          last_active_date?: string | null
+          level?: number | null
+          streak_days?: number | null
+          updated_at?: string
+          user_id: string
+          xp?: number | null
+        }
+        Update: {
+          badges?: Json | null
+          created_at?: string
+          daily_challenge_completed?: boolean | null
+          id?: string
+          last_active_date?: string | null
+          level?: number | null
+          streak_days?: number | null
+          updated_at?: string
+          user_id?: string
+          xp?: number | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null
@@ -117,6 +180,7 @@ export type Database = {
           display_name: string | null
           id: string
           language: string | null
+          onboarding_completed: boolean | null
           quiz_results: Json | null
           style: string | null
           updated_at: string
@@ -128,6 +192,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           language?: string | null
+          onboarding_completed?: boolean | null
           quiz_results?: Json | null
           style?: string | null
           updated_at?: string
@@ -139,6 +204,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           language?: string | null
+          onboarding_completed?: boolean | null
           quiz_results?: Json | null
           style?: string | null
           updated_at?: string
