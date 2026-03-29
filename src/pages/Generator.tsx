@@ -116,7 +116,7 @@ const Generator = () => {
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => saveFavorite(msg, i)}
                       className={`text-xs ${saved.has(i) ? "text-primary" : "text-muted-foreground hover:text-primary"}`}>
-                      <BookmarkHeart className={`mr-1 h-3 w-3 ${saved.has(i) ? "fill-primary" : ""}`} />
+                      <BookHeart className={`mr-1 h-3 w-3 ${saved.has(i) ? "fill-primary" : ""}`} />
                       {saved.has(i) ? "Sauvegardé" : "Favoris"}
                     </Button>
                   </div>

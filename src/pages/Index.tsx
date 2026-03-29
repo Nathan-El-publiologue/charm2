@@ -68,7 +68,7 @@ const styleLabels: Record<string, { label: string; emoji: string; color: string 
 const featureCards = [
   { path: "/training", icon: Dumbbell, label: "Entraînement", desc: "Simule une conversation", emoji: "🎭" },
   { path: "/profile-analyzer", icon: Camera, label: "Analyse Profil", desc: "Améliore ton profil dating", emoji: "📸" },
-  { path: "/favorites", icon: BookmarkHeart, label: "Favoris", desc: "Tes messages sauvegardés", emoji: "⭐" },
+  { path: "/favorites", icon: BookHeart, label: "Favoris", desc: "Tes messages sauvegardés", emoji: "⭐" },
   { path: "/guide", icon: BookOpen, label: "Guide", desc: "Conseils de séduction", emoji: "📖" },
 ];
 
