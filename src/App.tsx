@@ -16,6 +16,10 @@ import Generator from "./pages/Generator";
 import Guide from "./pages/Guide";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import Training from "./pages/Training";
+import ProfileAnalyzer from "./pages/ProfileAnalyzer";
+import Favorites from "./pages/Favorites";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +48,10 @@ const App = () => {
             <Route path="/guide" element={<AuthGuard><Guide /></AuthGuard>} />
             <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
             <Route path="/admin" element={<AuthGuard><Admin /></AuthGuard>} />
+            <Route path="/training" element={<AuthGuard><Training /></AuthGuard>} />
+            <Route path="/profile-analyzer" element={<AuthGuard><ProfileAnalyzer /></AuthGuard>} />
+            <Route path="/favorites" element={<AuthGuard><Favorites /></AuthGuard>} />
+            <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

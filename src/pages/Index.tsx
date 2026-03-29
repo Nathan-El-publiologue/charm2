@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ArrowRight, Check, Sparkles } from "lucide-react";
+import { Heart, ArrowRight, Check, Sparkles, Dumbbell, Camera, BookHeart, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { OnboardingTour } from "@/components/OnboardingTour";
+import { useGamification } from "@/hooks/useGamification";
 
 const quizQuestions = [
   {
@@ -62,12 +65,30 @@ const styleLabels: Record<string, { label: string; emoji: string; color: string 
   serious: { label: "Sérieux", emoji: "🧠", color: "from-blue-500 to-indigo-500" },
 };
 
+const featureCards = [
+  { path: "/training", icon: Dumbbell, label: "Entraînement", desc: "Simule une conversation", emoji: "🎭" },
+  { path: "/profile-analyzer", icon: Camera, label: "Analyse Profil", desc: "Améliore ton profil dating", emoji: "📸" },
+  { path: "/favorites", icon: BookHeart, label: "Favoris", desc: "Tes messages sauvegardés", emoji: "⭐" },
+  { path: "/guide", icon: BookOpen, label: "Guide", desc: "Conseils de séduction", emoji: "📖" },
+];
+
 const Index = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { addXP } = useGamification();
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [result, setResult] = useState<string | null>(null);
   const [quizStarted, setQuizStarted] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("user_profiles").select("onboarding_completed").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => {
+        if (data && !data.onboarding_completed) setShowOnboarding(true);
+      });
+  }, [user]);
 
   const handleAnswer = async (style: string) => {
     const newAnswers = [...answers, style];
@@ -76,15 +97,12 @@ const Index = () => {
     if (currentQ < quizQuestions.length - 1) {
       setCurrentQ(currentQ + 1);
     } else {
-      // Calculate dominant style
       const counts: Record<string, number> = {};
-      newAnswers.forEach((s) => {
-        counts[s] = (counts[s] || 0) + 1;
-      });
+      newAnswers.forEach((s) => { counts[s] = (counts[s] || 0) + 1; });
       const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
       setResult(dominant);
+      addXP(50, "Quiz complété !");
 
-      // Save to profile
       if (user) {
         const { error } = await supabase
           .from("user_profiles")
@@ -99,38 +117,53 @@ const Index = () => {
   if (!quizStarted) {
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center space-y-8">
+        {showOnboarding && <OnboardingTour onComplete={() => setShowOnboarding(false)} />}
+        <div className="px-6 py-6 space-y-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
-            className="space-y-6"
+            className="text-center space-y-4"
           >
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl gradient-primary shadow-2xl shadow-primary/40">
-              <Heart className="h-10 w-10 text-primary-foreground" />
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl gradient-primary shadow-2xl shadow-primary/40">
+              <Heart className="h-8 w-8 text-primary-foreground" />
             </div>
-            <h1 className="font-heading text-4xl font-bold text-foreground">
-              Bienvenue sur <span className="text-gradient">CharmAI</span>
+            <h1 className="font-heading text-3xl font-bold text-foreground">
+              <span className="text-gradient">CharmAI</span>
             </h1>
-            <p className="text-muted-foreground max-w-xs mx-auto">
-              Découvre ton style de séduction et reçois des conseils personnalisés par l'IA
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+              Ton coach séduction propulsé par l'IA
             </p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Button
               size="lg"
               onClick={() => setQuizStarted(true)}
-              className="gradient-primary text-primary-foreground font-semibold px-8 py-6 text-base rounded-2xl shadow-lg shadow-primary/30"
+              className="w-full gradient-primary text-primary-foreground font-semibold py-6 text-base rounded-2xl shadow-lg shadow-primary/30"
             >
               <Sparkles className="mr-2 h-5 w-5" />
               Commencer le Quiz
             </Button>
           </motion.div>
+
+          {/* Feature cards */}
+          <div className="grid grid-cols-2 gap-3">
+            {featureCards.map((card, i) => (
+              <motion.button
+                key={card.path}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
+                onClick={() => navigate(card.path)}
+                className="glass rounded-2xl p-4 text-left space-y-2 hover:border-primary/50 transition-all active:scale-[0.98]"
+              >
+                <span className="text-2xl">{card.emoji}</span>
+                <p className="text-sm font-bold text-foreground">{card.label}</p>
+                <p className="text-[10px] text-muted-foreground">{card.desc}</p>
+              </motion.button>
+            ))}
+          </div>
         </div>
       </AppLayout>
     );
@@ -140,13 +173,8 @@ const Index = () => {
     const s = styleLabels[result];
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center space-y-8">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring" }}
-            className="space-y-6"
-          >
+        <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 text-center space-y-8">
+          <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring" }} className="space-y-6">
             <div className="text-6xl">{s.emoji}</div>
             <h2 className="font-heading text-3xl font-bold text-foreground">
               Tu es <span className="text-gradient">{s.label}</span> !
@@ -156,38 +184,20 @@ const Index = () => {
             </p>
             <div className="glass rounded-2xl p-4 space-y-2">
               {Object.entries(
-                answers.reduce((acc: Record<string, number>, s) => {
-                  acc[s] = (acc[s] || 0) + 1;
-                  return acc;
-                }, {})
-              )
-                .sort((a, b) => b[1] - a[1])
-                .map(([style, count]) => (
-                  <div key={style} className="flex items-center gap-3">
-                    <span className="text-sm">{styleLabels[style].emoji}</span>
-                    <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(count / 5) * 100}%` }}
-                        className={`h-full rounded-full bg-gradient-to-r ${styleLabels[style].color}`}
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground w-16">{styleLabels[style].label}</span>
+                answers.reduce((acc: Record<string, number>, s) => { acc[s] = (acc[s] || 0) + 1; return acc; }, {})
+              ).sort((a, b) => b[1] - a[1]).map(([style, count]) => (
+                <div key={style} className="flex items-center gap-3">
+                  <span className="text-sm">{styleLabels[style].emoji}</span>
+                  <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${(count / 5) * 100}%` }}
+                      className={`h-full rounded-full bg-gradient-to-r ${styleLabels[style].color}`} />
                   </div>
-                ))}
+                  <span className="text-xs text-muted-foreground w-16">{styleLabels[style].label}</span>
+                </div>
+              ))}
             </div>
-            <Button
-              onClick={() => {
-                setQuizStarted(false);
-                setCurrentQ(0);
-                setAnswers([]);
-                setResult(null);
-              }}
-              variant="outline"
-              className="glass border-border/50"
-            >
-              Refaire le quiz
-            </Button>
+            <Button onClick={() => { setQuizStarted(false); setCurrentQ(0); setAnswers([]); setResult(null); }}
+              variant="outline" className="glass border-border/50">Refaire le quiz</Button>
           </motion.div>
         </div>
       </AppLayout>
@@ -195,44 +205,23 @@ const Index = () => {
   }
 
   const q = quizQuestions[currentQ];
-
   return (
     <AppLayout>
-      <div className="flex flex-col min-h-[80vh] px-6 py-8">
+      <div className="flex flex-col min-h-[70vh] px-6 py-8">
         <div className="flex items-center gap-2 mb-8">
           {quizQuestions.map((_, i) => (
-            <div
-              key={i}
-              className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                i <= currentQ ? "gradient-primary" : "bg-secondary"
-              }`}
-            />
+            <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= currentQ ? "gradient-primary" : "bg-secondary"}`} />
           ))}
         </div>
-
         <AnimatePresence mode="wait">
-          <motion.div
-            key={currentQ}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-            className="flex-1 space-y-6"
-          >
-            <h2 className="font-heading text-xl font-bold text-foreground">
-              {q.question}
-            </h2>
-
+          <motion.div key={currentQ} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }} className="flex-1 space-y-6">
+            <h2 className="font-heading text-xl font-bold text-foreground">{q.question}</h2>
             <div className="space-y-3">
               {q.options.map((opt, i) => (
-                <motion.button
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
+                <motion.button key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                   onClick={() => handleAnswer(opt.style)}
-                  className="w-full glass rounded-2xl p-4 text-left text-foreground hover:border-primary/50 transition-all duration-200 active:scale-[0.98]"
-                >
+                  className="w-full glass rounded-2xl p-4 text-left text-foreground hover:border-primary/50 transition-all duration-200 active:scale-[0.98]">
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-xs font-bold text-muted-foreground">
                       {String.fromCharCode(65 + i)}
