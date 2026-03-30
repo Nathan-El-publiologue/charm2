@@ -58,8 +58,8 @@ const Training = () => {
     const payload = {
       user_id: user.id,
       target_name: selectedProfile.name,
-      target_personality: selectedProfile.personality as unknown as Record<string, unknown>,
-      messages: msgs as unknown as Record<string, unknown>,
+      target_personality: selectedProfile.personality as unknown as Json,
+      messages: msgs as unknown as Json,
     };
     if (activeConvoId) {
       await supabase.from("conversations").update(payload).eq("id", activeConvoId);
