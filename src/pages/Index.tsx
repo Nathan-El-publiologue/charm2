@@ -118,20 +118,20 @@ const Index = () => {
     return (
       <AppLayout>
         {showOnboarding && <OnboardingTour onComplete={() => setShowOnboarding(false)} />}
-        <div className="px-6 py-6 space-y-8">
+      <div className="px-5 py-8 space-y-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
-            className="text-center space-y-4"
+            className="text-center space-y-5"
           >
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl gradient-primary shadow-2xl shadow-primary/40">
-              <Heart className="h-8 w-8 text-primary-foreground" />
+            <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-2xl gradient-primary shadow-2xl shadow-primary/40">
+              <Heart className="h-9 w-9 text-primary-foreground" />
             </div>
             <h1 className="font-heading text-3xl font-bold text-foreground">
               <span className="text-gradient">CharmAI</span>
             </h1>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
               Ton coach séduction propulsé par l'IA
             </p>
           </motion.div>
@@ -148,7 +148,7 @@ const Index = () => {
           </motion.div>
 
           {/* Feature cards */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {featureCards.map((card, i) => (
               <motion.button
                 key={card.path}
@@ -156,11 +156,11 @@ const Index = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.1 }}
                 onClick={() => navigate(card.path)}
-                className="glass rounded-2xl p-4 text-left space-y-2 hover:border-primary/50 transition-all active:scale-[0.98]"
+                className="glass rounded-2xl p-5 text-left space-y-3 hover:border-primary/50 transition-all active:scale-[0.98]"
               >
-                <span className="text-2xl">{card.emoji}</span>
+                <span className="text-3xl">{card.emoji}</span>
                 <p className="text-sm font-bold text-foreground">{card.label}</p>
-                <p className="text-[10px] text-muted-foreground">{card.desc}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{card.desc}</p>
               </motion.button>
             ))}
           </div>
@@ -207,26 +207,26 @@ const Index = () => {
   const q = quizQuestions[currentQ];
   return (
     <AppLayout>
-      <div className="flex flex-col min-h-[70vh] px-6 py-8">
-        <div className="flex items-center gap-2 mb-8">
+      <div className="flex flex-col min-h-[70vh] px-5 py-8">
+        <div className="flex items-center gap-2 mb-10">
           {quizQuestions.map((_, i) => (
             <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= currentQ ? "gradient-primary" : "bg-secondary"}`} />
           ))}
         </div>
         <AnimatePresence mode="wait">
           <motion.div key={currentQ} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }} className="flex-1 space-y-6">
-            <h2 className="font-heading text-xl font-bold text-foreground">{q.question}</h2>
-            <div className="space-y-3">
+            transition={{ duration: 0.3 }} className="flex-1 space-y-8">
+            <h2 className="font-heading text-xl font-bold text-foreground leading-relaxed">{q.question}</h2>
+            <div className="space-y-4">
               {q.options.map((opt, i) => (
                 <motion.button key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                   onClick={() => handleAnswer(opt.style)}
-                  className="w-full glass rounded-2xl p-4 text-left text-foreground hover:border-primary/50 transition-all duration-200 active:scale-[0.98]">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-xs font-bold text-muted-foreground">
+                  className="w-full glass rounded-2xl p-5 text-left text-foreground hover:border-primary/50 transition-all duration-200 active:scale-[0.98]">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-xs font-bold text-muted-foreground">
                       {String.fromCharCode(65 + i)}
                     </div>
-                    <span className="text-sm font-medium">{opt.text}</span>
+                    <span className="text-sm font-medium leading-relaxed">{opt.text}</span>
                   </div>
                 </motion.button>
               ))}
