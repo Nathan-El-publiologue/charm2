@@ -57,13 +57,13 @@ const Training = () => {
     const payload = {
       user_id: user.id,
       target_name: selectedProfile.name,
-      target_personality: selectedProfile.personality as Record<string, string>,
-      messages: msgs as unknown as Record<string, unknown>[],
+      target_personality: selectedProfile.personality as unknown as Record<string, unknown>,
+      messages: msgs as unknown as Record<string, unknown>,
     };
     if (activeConvoId) {
       await supabase.from("conversations").update(payload).eq("id", activeConvoId);
     } else {
-      const { data } = await supabase.from("conversations").insert(payload).select("id").single();
+      const { data } = await supabase.from("conversations").insert([payload]).select("id").single();
       if (data) setActiveConvoId(data.id);
     }
   }, [user, selectedProfile, activeConvoId]);
