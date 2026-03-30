@@ -11,14 +11,6 @@ import { useNavigate } from "react-router-dom";
 import { CHARACTERS, type CharacterProfile } from "@/data/characters";
 import type { Msg } from "@/lib/streamChat";
 import type { Json } from "@/integrations/supabase/types";
-import { Input } from "@/components/ui/input";
-import { AppLayout } from "@/components/AppLayout";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { CHARACTERS, type CharacterProfile } from "@/data/characters";
-import type { Msg } from "@/lib/streamChat";
 
 type ConversationRow = {
   id: string;
