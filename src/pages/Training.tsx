@@ -296,24 +296,41 @@ const Training = () => {
                 )}
               </motion.div>
             ) : (
-              <motion.div key="profiles" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4">
-                {CHARACTERS.map((char) => (
-                  <motion.button
-                    key={char.name}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => startNewChat(char)}
-                    className="w-full glass rounded-2xl p-5 flex items-center gap-4 text-left hover:border-primary/50 transition-all"
-                  >
-                    <img src={char.image} alt={char.name} className="h-16 w-16 rounded-full object-cover border-2 border-primary/30" loading="lazy" width={64} height={64} />
-                    <div className="flex-1">
-                      <p className="font-bold text-foreground text-base">{char.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{char.description}</p>
-                      <p className="text-[10px] text-muted-foreground/70 mt-1 capitalize">{char.personality.interests}</p>
+              <motion.div key="profiles" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
+                {(["facile", "moyen", "difficile", "expert"] as const).map((diff) => {
+                  const chars = CHARACTERS.filter((c) => c.difficulty === diff);
+                  if (chars.length === 0) return null;
+                  const diffColors = { facile: "text-green-400 bg-green-400/10", moyen: "text-yellow-400 bg-yellow-400/10", difficile: "text-orange-400 bg-orange-400/10", expert: "text-red-400 bg-red-400/10" };
+                  const diffEmojis = { facile: "🟢", moyen: "🟡", difficile: "🟠", expert: "🔴" };
+                  return (
+                    <div key={diff}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize ${diffColors[diff]}`}>
+                          {diffEmojis[diff]} {diff}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">{chars.length} personnages</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {chars.map((char) => (
+                          <motion.button
+                            key={char.name}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileTap={{ scale: 0.96 }}
+                            onClick={() => startNewChat(char)}
+                            className="glass rounded-2xl p-3 flex flex-col items-center gap-2 text-center hover:border-primary/50 transition-all"
+                          >
+                            <img src={char.image} alt={char.name} className="h-16 w-16 rounded-full object-cover border-2 border-primary/30" loading="lazy" width={64} height={64} />
+                            <div>
+                              <p className="font-bold text-foreground text-sm">{char.name}</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">{char.description}</p>
+                            </div>
+                          </motion.button>
+                        ))}
+                      </div>
                     </div>
-                  </motion.button>
-                ))}
+                  );
+                })}
               </motion.div>
             )}
           </AnimatePresence>
