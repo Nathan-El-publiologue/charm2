@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ArrowRight, Check, Sparkles, Dumbbell, Camera, BookHeart, BookOpen } from "lucide-react";
+import { Heart, Sparkles, Dumbbell, Camera, BookHeart, BookOpen, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { useGamification } from "@/hooks/useGamification";
+import charmLogo from "@/assets/charm-logo.png";
 
 const quizQuestions = [
   {
@@ -66,10 +67,10 @@ const styleLabels: Record<string, { label: string; emoji: string; color: string 
 };
 
 const featureCards = [
-  { path: "/training", icon: Dumbbell, label: "Entraînement", desc: "Simule une conversation", emoji: "🎭" },
-  { path: "/profile-analyzer", icon: Camera, label: "Analyse Profil", desc: "Améliore ton profil dating", emoji: "📸" },
-  { path: "/favorites", icon: BookHeart, label: "Favoris", desc: "Tes messages sauvegardés", emoji: "⭐" },
-  { path: "/guide", icon: BookOpen, label: "Guide", desc: "Conseils de séduction", emoji: "📖" },
+  { path: "/training", icon: Dumbbell, label: "Entraînement", desc: "Simule une conversation réaliste", gradient: "from-primary/20 to-accent/10" },
+  { path: "/profile-analyzer", icon: Camera, label: "Analyse Profil", desc: "Améliore ton profil dating", gradient: "from-accent/20 to-primary/10" },
+  { path: "/favorites", icon: BookHeart, label: "Favoris", desc: "Tes messages sauvegardés", gradient: "from-purple-500/20 to-primary/10" },
+  { path: "/guide", icon: BookOpen, label: "Guide", desc: "Conseils de séduction", gradient: "from-blue-500/20 to-accent/10" },
 ];
 
 const Index = () => {
@@ -114,82 +115,113 @@ const Index = () => {
     }
   };
 
+  // ─── HOME SCREEN ───
   if (!quizStarted) {
     return (
       <AppLayout>
         {showOnboarding && <OnboardingTour onComplete={() => setShowOnboarding(false)} />}
-      <div className="px-5 py-8 space-y-10">
+        <div className="px-5 py-10 space-y-12">
+          {/* Hero */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="text-center space-y-5"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="text-center space-y-6"
           >
-            <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-2xl gradient-primary shadow-2xl shadow-primary/40">
-              <Heart className="h-9 w-9 text-primary-foreground" />
+            <motion.img
+              src={charmLogo}
+              alt="CharmAI"
+              className="mx-auto w-24 h-24 rounded-3xl shadow-2xl shadow-primary/30"
+              initial={{ scale: 0.5, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+            />
+            <div className="space-y-2">
+              <h1 className="font-heading text-4xl font-bold text-foreground tracking-tight">
+                <span className="text-gradient">CharmAI</span>
+              </h1>
+              <p className="text-base text-muted-foreground max-w-[280px] mx-auto leading-relaxed">
+                Ton coach séduction propulsé par l'intelligence artificielle
+              </p>
             </div>
-            <h1 className="font-heading text-3xl font-bold text-foreground">
-              <span className="text-gradient">CharmAI</span>
-            </h1>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
-              Ton coach séduction propulsé par l'IA
-            </p>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          {/* CTA Quiz */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             <Button
               size="lg"
               onClick={() => setQuizStarted(true)}
-              className="w-full gradient-primary text-primary-foreground font-semibold py-6 text-base rounded-2xl shadow-lg shadow-primary/30"
+              className="w-full gradient-primary text-primary-foreground font-semibold py-7 text-base rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-shadow"
             >
-              <Sparkles className="mr-2 h-5 w-5" />
-              Commencer le Quiz
+              <Sparkles className="mr-2.5 h-5 w-5" />
+              Découvre ton style de séduction
+              <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </motion.div>
 
-          {/* Feature cards */}
-          <div className="grid grid-cols-2 gap-4">
-            {featureCards.map((card, i) => (
-              <motion.button
-                key={card.path}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.1 }}
-                onClick={() => navigate(card.path)}
-                className="glass rounded-2xl p-5 text-left space-y-3 hover:border-primary/50 transition-all active:scale-[0.98]"
-              >
-                <span className="text-3xl">{card.emoji}</span>
-                <p className="text-sm font-bold text-foreground">{card.label}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">{card.desc}</p>
-              </motion.button>
-            ))}
+          {/* Feature Cards */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">
+              Fonctionnalités
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              {featureCards.map((card, i) => {
+                const Icon = card.icon;
+                return (
+                  <motion.button
+                    key={card.path}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + i * 0.1, ease: "easeOut" }}
+                    onClick={() => navigate(card.path)}
+                    className={`group relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br ${card.gradient} p-5 text-left space-y-3 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 active:scale-[0.97]`}
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/80 group-hover:bg-primary/20 transition-colors">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">{card.label}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-1">{card.desc}</p>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </AppLayout>
     );
   }
 
+  // ─── QUIZ RESULT ───
   if (result) {
     const s = styleLabels[result];
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 text-center space-y-8">
-          <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring" }} className="space-y-6">
-            <div className="text-6xl">{s.emoji}</div>
-            <h2 className="font-heading text-3xl font-bold text-foreground">
-              Tu es <span className="text-gradient">{s.label}</span> !
-            </h2>
-            <p className="text-muted-foreground max-w-xs mx-auto">
-              Ton style de séduction est maintenant configuré. L'IA adaptera tous ses conseils à ta personnalité.
-            </p>
-            <div className="glass rounded-2xl p-4 space-y-2">
+        <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 py-10 text-center space-y-10">
+          <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring" }} className="space-y-8">
+            <div className="text-7xl">{s.emoji}</div>
+            <div className="space-y-3">
+              <h2 className="font-heading text-3xl font-bold text-foreground">
+                Tu es <span className="text-gradient">{s.label}</span> !
+              </h2>
+              <p className="text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                Ton style de séduction est maintenant configuré. L'IA adaptera tous ses conseils à ta personnalité.
+              </p>
+            </div>
+            <div className="glass rounded-2xl p-5 space-y-3">
               {Object.entries(
                 answers.reduce((acc: Record<string, number>, s) => { acc[s] = (acc[s] || 0) + 1; return acc; }, {})
               ).sort((a, b) => b[1] - a[1]).map(([style, count]) => (
                 <div key={style} className="flex items-center gap-3">
                   <span className="text-sm">{styleLabels[style].emoji}</span>
-                  <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                  <div className="flex-1 h-2.5 bg-secondary rounded-full overflow-hidden">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${(count / 5) * 100}%` }}
+                      transition={{ delay: 0.3, duration: 0.8 }}
                       className={`h-full rounded-full bg-gradient-to-r ${styleLabels[style].color}`} />
                   </div>
                   <span className="text-xs text-muted-foreground w-16">{styleLabels[style].label}</span>
@@ -197,33 +229,36 @@ const Index = () => {
               ))}
             </div>
             <Button onClick={() => { setQuizStarted(false); setCurrentQ(0); setAnswers([]); setResult(null); }}
-              variant="outline" className="glass border-border/50">Refaire le quiz</Button>
+              variant="outline" className="glass border-border/50 mt-4">Refaire le quiz</Button>
           </motion.div>
         </div>
       </AppLayout>
     );
   }
 
+  // ─── QUIZ QUESTIONS ───
   const q = quizQuestions[currentQ];
   return (
     <AppLayout>
-      <div className="flex flex-col min-h-[70vh] px-5 py-8">
-        <div className="flex items-center gap-2 mb-10">
+      <div className="flex flex-col min-h-[70vh] px-5 py-10">
+        <div className="flex items-center gap-2 mb-3">
           {quizQuestions.map((_, i) => (
-            <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= currentQ ? "gradient-primary" : "bg-secondary"}`} />
+            <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${i <= currentQ ? "gradient-primary" : "bg-secondary"}`} />
           ))}
         </div>
+        <p className="text-xs text-muted-foreground mb-8">Question {currentQ + 1}/{quizQuestions.length}</p>
+
         <AnimatePresence mode="wait">
           <motion.div key={currentQ} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }} className="flex-1 space-y-8">
             <h2 className="font-heading text-xl font-bold text-foreground leading-relaxed">{q.question}</h2>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {q.options.map((opt, i) => (
-                <motion.button key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+                <motion.button key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                   onClick={() => handleAnswer(opt.style)}
-                  className="w-full glass rounded-2xl p-5 text-left text-foreground hover:border-primary/50 transition-all duration-200 active:scale-[0.98]">
+                  className="w-full glass rounded-2xl p-5 text-left text-foreground hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 active:scale-[0.98]">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-xs font-bold text-muted-foreground">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xs font-bold text-primary">
                       {String.fromCharCode(65 + i)}
                     </div>
                     <span className="text-sm font-medium leading-relaxed">{opt.text}</span>
