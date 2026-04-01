@@ -53,7 +53,7 @@ const App = () => {
             <Route path="/profile-analyzer" element={<AuthGuard><ProfileAnalyzer /></AuthGuard>} />
             <Route path="/favorites" element={<AuthGuard><Favorites /></AuthGuard>} />
             <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
-            <Route path="/install" element={<Install />} />
+            <Route path="/install" element={<AuthGuard><Index /></AuthGuard>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
