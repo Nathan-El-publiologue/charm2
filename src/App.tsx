@@ -20,6 +20,7 @@ import Training from "./pages/Training";
 import ProfileAnalyzer from "./pages/ProfileAnalyzer";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
