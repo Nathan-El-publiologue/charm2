@@ -72,7 +72,7 @@ RÈGLES:
         onDone: () => setIsLoading(false),
         systemContext,
       });
-      addXP?.(5);
+      addXP?.(5, "Message envoyé en mode féminin");
     } catch (e: any) {
       toast.error(e.message || "Erreur");
       setIsLoading(false);
