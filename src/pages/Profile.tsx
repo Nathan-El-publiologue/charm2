@@ -24,13 +24,20 @@ const Profile = () => {
   const { user, signOut } = useAuth();
   const { data: gData, completeDailyChallenge } = useGamification();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; style: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; style: string | null; gender: string | null } | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("user_profiles").select("display_name, avatar_url, style").eq("user_id", user.id).maybeSingle()
+    supabase.from("user_profiles").select("display_name, avatar_url, style, gender").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => { if (data) setProfile(data); });
   }, [user]);
+
+  const updateGender = async (gender: string) => {
+    if (!user) return;
+    await supabase.from("user_profiles").update({ gender }).eq("user_id", user.id);
+    setProfile((p) => p ? { ...p, gender } : p);
+    toast.success(`Mode ${gender === "female" ? "féminin" : "masculin"} activé !`);
+  };
 
   const handleSignOut = async () => {
     await signOut();
