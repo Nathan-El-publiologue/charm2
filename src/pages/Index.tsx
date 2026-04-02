@@ -66,11 +66,18 @@ const styleLabels: Record<string, { label: string; emoji: string; color: string 
   serious: { label: "Sérieux", emoji: "🧠", color: "from-blue-500 to-indigo-500" },
 };
 
-const featureCards = [
+const maleFeatureCards = [
   { path: "/training", icon: Dumbbell, label: "Entraînement", desc: "Simule une conversation réaliste", gradient: "from-primary/20 to-accent/10" },
   { path: "/profile-analyzer", icon: Camera, label: "Analyse Profil", desc: "Améliore ton profil dating", gradient: "from-accent/20 to-primary/10" },
   { path: "/favorites", icon: BookHeart, label: "Favoris", desc: "Tes messages sauvegardés", gradient: "from-purple-500/20 to-primary/10" },
   { path: "/guide", icon: BookOpen, label: "Guide", desc: "Conseils de séduction", gradient: "from-blue-500/20 to-accent/10" },
+];
+
+const femaleFeatureCards = [
+  { path: "/female-training", icon: Dumbbell, label: "Mode Féminin", desc: "Apprends à décrypter les hommes", gradient: "from-pink-500/20 to-accent/10" },
+  { path: "/profile-analyzer", icon: Camera, label: "Analyse Profil", desc: "Analyse ses messages", gradient: "from-accent/20 to-primary/10" },
+  { path: "/favorites", icon: BookHeart, label: "Favoris", desc: "Tes messages sauvegardés", gradient: "from-purple-500/20 to-primary/10" },
+  { path: "/female-guide", icon: BookOpen, label: "Guide Féminin", desc: "Détecter la manipulation", gradient: "from-blue-500/20 to-accent/10" },
 ];
 
 const Index = () => {
