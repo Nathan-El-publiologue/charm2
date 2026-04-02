@@ -227,7 +227,7 @@ const Training = () => {
   if (!selectedProfile) {
     return (
       <AppLayout>
-        <div className="px-5 py-8 space-y-6">
+        <div className="px-5 py-6 space-y-5">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
               <ArrowLeft className="h-5 w-5" />
