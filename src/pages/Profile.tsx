@@ -130,6 +130,28 @@ const Profile = () => {
           </motion.div>
         )}
 
+        {/* Gender Mode */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="glass rounded-2xl p-4 space-y-3">
+          <p className="text-sm font-bold text-foreground">🎭 Mode d'expérience</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => updateGender("male")}
+              className={`rounded-xl p-3 text-center transition-all ${profile?.gender !== "female" ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+            >
+              <span className="text-xl">👨🏾</span>
+              <p className="text-xs font-bold mt-1">Mode Masculin</p>
+            </button>
+            <button
+              onClick={() => updateGender("female")}
+              className={`rounded-xl p-3 text-center transition-all ${profile?.gender === "female" ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+            >
+              <span className="text-xl">👩🏾</span>
+              <p className="text-xs font-bold mt-1">Mode Féminin</p>
+            </button>
+          </div>
+        </motion.div>
+
         <Button variant="outline" onClick={handleSignOut} className="w-full glass border-border/50 rounded-2xl text-destructive">
           <LogOut className="mr-2 h-4 w-4" /> Se déconnecter
         </Button>
