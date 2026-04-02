@@ -49,6 +49,8 @@ const App = () => {
             <Route path="/analyzer" element={<AuthGuard><Analyzer /></AuthGuard>} />
             <Route path="/generator" element={<AuthGuard><Generator /></AuthGuard>} />
             <Route path="/guide" element={<AuthGuard><Guide /></AuthGuard>} />
+            <Route path="/female-training" element={<AuthGuard><FemaleTraining /></AuthGuard>} />
+            <Route path="/female-guide" element={<AuthGuard><FemaleGuide /></AuthGuard>} />
             <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
             <Route path="/admin" element={<AuthGuard><Admin /></AuthGuard>} />
             <Route path="/training" element={<AuthGuard><Training /></AuthGuard>} />
