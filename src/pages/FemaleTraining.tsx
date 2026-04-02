@@ -30,7 +30,7 @@ const FemaleTraining = () => {
     setSelectedChar(char);
     setMessages([{ role: "assistant", content: char.openingMessage }]);
     setShowAnalysis(false);
-    addXP?.(10);
+    addXP?.(10, "Conversation mode féminin démarrée");
   };
 
   const send = async () => {
