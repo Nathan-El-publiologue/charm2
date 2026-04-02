@@ -320,7 +320,7 @@ const Training = () => {
                             onClick={() => startNewChat(char)}
                             className="glass rounded-2xl p-4 flex flex-col items-center gap-3 text-center hover:border-primary/50 transition-all"
                           >
-                            <img src={char.image} alt={char.name} className="h-16 w-16 rounded-full object-cover border-2 border-primary/30" loading="lazy" width={64} height={64} />
+                            <img src={char.image} alt={char.name} className="h-20 w-20 rounded-full object-cover border-2 border-primary/30" loading="lazy" width={80} height={80} />
                             <div>
                               <p className="font-bold text-foreground text-sm">{char.name}</p>
                               <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">{char.description}</p>
