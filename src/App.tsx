@@ -17,6 +17,8 @@ import Guide from "./pages/Guide";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Training from "./pages/Training";
+import FemaleTraining from "./pages/FemaleTraining";
+import FemaleGuide from "./pages/FemaleGuide";
 import ProfileAnalyzer from "./pages/ProfileAnalyzer";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
@@ -47,6 +49,8 @@ const App = () => {
             <Route path="/analyzer" element={<AuthGuard><Analyzer /></AuthGuard>} />
             <Route path="/generator" element={<AuthGuard><Generator /></AuthGuard>} />
             <Route path="/guide" element={<AuthGuard><Guide /></AuthGuard>} />
+            <Route path="/female-training" element={<AuthGuard><FemaleTraining /></AuthGuard>} />
+            <Route path="/female-guide" element={<AuthGuard><FemaleGuide /></AuthGuard>} />
             <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
             <Route path="/admin" element={<AuthGuard><Admin /></AuthGuard>} />
             <Route path="/training" element={<AuthGuard><Training /></AuthGuard>} />
