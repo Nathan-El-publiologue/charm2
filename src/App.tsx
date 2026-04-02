@@ -17,6 +17,8 @@ import Guide from "./pages/Guide";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Training from "./pages/Training";
+import FemaleTraining from "./pages/FemaleTraining";
+import FemaleGuide from "./pages/FemaleGuide";
 import ProfileAnalyzer from "./pages/ProfileAnalyzer";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
