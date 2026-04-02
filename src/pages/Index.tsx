@@ -178,7 +178,7 @@ const Index = () => {
               Fonctionnalités
             </p>
             <div className="grid grid-cols-2 gap-4">
-              {featureCards.map((card, i) => {
+              {(gender === "female" ? femaleFeatureCards : maleFeatureCards).map((card, i) => {
                 const Icon = card.icon;
                 return (
                   <motion.button
