@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
-import { BottomNav } from "./BottomNav";
+import { RadialNav } from "./RadialNav";
 import { XPNotification } from "./XPNotification";
 import { InstallBanner } from "./InstallBanner";
 import { useGamification } from "@/hooks/useGamification";
