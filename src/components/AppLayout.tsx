@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
-import { BottomNav } from "./BottomNav";
+import { RadialNav } from "./RadialNav";
 import { XPNotification } from "./XPNotification";
 import { InstallBanner } from "./InstallBanner";
 import { useGamification } from "@/hooks/useGamification";
@@ -24,8 +24,8 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
       </div>
-      <main className="pt-12 pb-20">{children}</main>
-      <BottomNav />
+      <main className="pt-12 pb-6">{children}</main>
+      <RadialNav />
       <XPNotification xpGained={xpGained} />
       <InstallBanner />
     </div>

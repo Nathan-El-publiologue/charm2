@@ -227,7 +227,7 @@ const Training = () => {
   if (!selectedProfile) {
     return (
       <AppLayout>
-        <div className="px-5 py-8 space-y-6">
+        <div className="px-5 py-6 space-y-5">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
               <ArrowLeft className="h-5 w-5" />
@@ -310,7 +310,7 @@ const Training = () => {
                         </span>
                         <span className="text-[10px] text-muted-foreground">{chars.length} personnages</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-4">
                         {chars.map((char) => (
                           <motion.button
                             key={char.name}
@@ -318,9 +318,9 @@ const Training = () => {
                             animate={{ opacity: 1, y: 0 }}
                             whileTap={{ scale: 0.96 }}
                             onClick={() => startNewChat(char)}
-                            className="glass rounded-2xl p-3 flex flex-col items-center gap-2 text-center hover:border-primary/50 transition-all"
+                            className="glass rounded-2xl p-4 flex flex-col items-center gap-3 text-center hover:border-primary/50 transition-all"
                           >
-                            <img src={char.image} alt={char.name} className="h-16 w-16 rounded-full object-cover border-2 border-primary/30" loading="lazy" width={64} height={64} />
+                            <img src={char.image} alt={char.name} className="h-20 w-20 rounded-full object-cover border-2 border-primary/30" loading="lazy" width={80} height={80} />
                             <div>
                               <p className="font-bold text-foreground text-sm">{char.name}</p>
                               <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">{char.description}</p>
