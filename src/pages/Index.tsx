@@ -89,12 +89,14 @@ const Index = () => {
   const [result, setResult] = useState<string | null>(null);
   const [quizStarted, setQuizStarted] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [gender, setGender] = useState<string>("male");
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("user_profiles").select("onboarding_completed").eq("user_id", user.id).maybeSingle()
+    supabase.from("user_profiles").select("onboarding_completed, gender").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => {
         if (data && !data.onboarding_completed) setShowOnboarding(true);
+        if (data?.gender) setGender(data.gender);
       });
   }, [user]);
 
