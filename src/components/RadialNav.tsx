@@ -22,7 +22,7 @@ export const RadialNav = () => {
   const [contaminating, setContaminating] = useState<{ path: string; color: string } | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const gateRef = useRef<HTMLDivElement>(null);
+  const gateRef = useRef<HTMLButtonElement>(null);
 
   const getItemPosition = (index: number) => {
     const totalItems = NAV_ITEMS.length;
