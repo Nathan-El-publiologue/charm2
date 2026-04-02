@@ -310,7 +310,7 @@ const Training = () => {
                         </span>
                         <span className="text-[10px] text-muted-foreground">{chars.length} personnages</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-4">
                         {chars.map((char) => (
                           <motion.button
                             key={char.name}
