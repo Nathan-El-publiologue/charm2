@@ -11,7 +11,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '21' # Correction ici pour éviter l'erreur "invalid source release"
+          java-version: '21'
 
       - name: Configuration de Node.js
         uses: actions/setup-node@v4
@@ -29,12 +29,17 @@ jobs:
           npx cap init "Charm AI" com.charmai.app --web-dir dist || echo "Déjà init"
           npx cap add android || echo "Android existe déjà"
           
-          # Force la détection du logo peu importe le nom ou l'emplacement
+          # Force la détection du logo
           mkdir -p assets
           find . -maxdepth 2 -name "logo*" -exec cp {} assets/icon.png \;
           
-          npx capacitor-assets generate --android || echo "Pas d'assets générés"
+          npx capacitor-assets generate --android || echo "Pas d'assets"
           npx cap sync android
+
+      - name: Correctif Duplicate Classes (Kotlin)
+        run: |
+          # Cette commande modifie le fichier build.gradle pour résoudre le conflit de versions Kotlin
+          sed -i '/dependencies {/a \    constraints {\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22") { because("Force same version to avoid duplicate classes") }\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22") { because("Force same version to avoid duplicate classes") }\n    }' android/app/build.gradle
 
       - name: Compilation de l'APK
         run: |
