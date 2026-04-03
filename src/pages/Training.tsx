@@ -134,6 +134,7 @@ const Training = () => {
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setIsLoading(true);
+    incrementCount();
 
     const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/simulate-chat`;
     try {
