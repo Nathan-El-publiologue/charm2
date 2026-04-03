@@ -4,16 +4,12 @@
   "webDir": "dist",
   "server": {
     "androidScheme": "https",
+    "hostname": "charmai.app",
     "allowNavigation": [
+      "*.lovable.app",
+      "*.lovable.dev",
       "accounts.google.com",
-      "*.google.com",
-      "*.googleapis.com",
-      "*.supabase.co",
-      "*.firebaseapp.com"
+      "*.google.com"
     ]
-  },
-  "android": {
-    "allowMixedContent": true,
-    "captureInput": true
   }
 }
