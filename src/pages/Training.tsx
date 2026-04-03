@@ -128,7 +128,7 @@ const Training = () => {
   };
 
   const send = async () => {
-    if (!input.trim() || isLoading || !selectedProfile) return;
+    if (!input.trim() || isLoading || !selectedProfile || isLimitReached) return;
     const userMsg: Msg = { role: "user", content: input.trim() };
     setInput("");
     const newMessages = [...messages, userMsg];
