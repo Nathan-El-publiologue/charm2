@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, ArrowLeft, ImagePlus, X, History, Clock, Trash2, MessageCircle } from "lucide-react";
+import { Send, ArrowLeft, ImagePlus, X, History, Clock, Trash2, MessageCircle, MessageSquareWarning, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AppLayout } from "@/components/AppLayout";
@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { CHARACTERS, type CharacterProfile } from "@/data/characters";
+import { FemaleCharacterNotification } from "@/components/FemaleCharacterNotification";
+import { useMessageLimit } from "@/hooks/useMessageLimit";
 import type { Msg } from "@/lib/streamChat";
 import type { Json } from "@/integrations/supabase/types";
 
