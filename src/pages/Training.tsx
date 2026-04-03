@@ -361,7 +361,10 @@ const Training = () => {
             <h1 className="font-heading text-base font-bold text-foreground">{selectedProfile.name}</h1>
             <p className="text-[10px] text-muted-foreground">{selectedProfile.description}</p>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${remaining <= 10 ? "bg-red-400/20 text-red-400" : "bg-primary/20 text-primary"}`}>
+              {remaining}/{dailyLimit}
+            </span>
             <span className="text-[10px] glass px-2 py-1 rounded-full text-primary">🎭 Simulation</span>
           </div>
         </div>
