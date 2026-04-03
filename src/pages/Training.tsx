@@ -231,6 +231,10 @@ const Training = () => {
   if (!selectedProfile) {
     return (
       <AppLayout>
+        <FemaleCharacterNotification onOpenChat={(name) => {
+          const char = CHARACTERS.find((c) => c.name === name);
+          if (char) startNewChat(char);
+        }} />
         <div className="px-5 py-6 space-y-5">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
