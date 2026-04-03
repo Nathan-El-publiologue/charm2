@@ -1,4 +1,4 @@
-name: Build Charm AI APK
+name: Build Charm AI Total Fix
 on: [push]
 
 jobs:
@@ -7,49 +7,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configuration de Java 21
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: Configuration de Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Installation et Build Web
+      - name: Build Web Application
         run: |
           npm install
           npm run build
 
-      - name: Preparation Capacitor et Logo
+      - name: Setup Capacitor & Assets
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
-          npx cap init "Charm AI" com.charmai.app --web-dir dist || echo "Déjà init"
-          npx cap add android || echo "Android existe déjà"
+          npx cap init "Charm AI" com.charmai.app --web-dir dist || echo "Ok"
+          npx cap add android || echo "Ok"
           
-          # Force la détection du logo
+          # Correction du logo : cherche n'importe quel logo et le place au bon endroit
           mkdir -p assets
-          find . -maxdepth 2 -name "logo*" -exec cp {} assets/icon.png \;
+          find . -maxdepth 2 -iname "logo*" -exec cp {} assets/icon.png \;
+          npx capacitor-assets generate --android || echo "Assets skip"
           
-          # GÉNÉRATION ET COPIE (C'est ici que l'erreur 404 se règle)
-          npx capacitor-assets generate --android || echo "Pas d'assets"
+          # IMPORTANT : Synchronise le JSON et les fichiers Web
           npx cap copy android
           npx cap sync android
 
-      - name: Correctif Duplicate Classes (Kotlin)
+      - name: Fix Android Environment
         run: |
-          sed -i '/dependencies {/a \    constraints {\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22") { because("Force same version to avoid duplicate classes") }\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22") { because("Force same version to avoid duplicate classes") }\n    }' android/app/build.gradle
+          # Supprime les doublons Kotlin qui font échouer le build
+          sed -i '/dependencies {/a \    constraints {\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22")\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22")\n    }' android/app/build.gradle
+          
+          # Autorise le trafic HTTP en plus du HTTPS au cas où
+          sed -i 's/android:fullBackupContent="true"/android:fullBackupContent="true" android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
 
-      - name: Compilation de l'APK
+      - name: Final Compilation
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Téléchargement de l'APK
+      - name: Upload Functional APK
         uses: actions/upload-artifact@v4
         with:
-          name: Charm-AI-APK
+          name: CharmAI-Full-Fix
           path: android/app/build/outputs/apk/debug/app-debug.apk
