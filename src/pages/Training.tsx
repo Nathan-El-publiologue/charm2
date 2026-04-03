@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, ArrowLeft, ImagePlus, X, History, Clock, Trash2, MessageCircle } from "lucide-react";
+import { Send, ArrowLeft, ImagePlus, X, History, Clock, Trash2, MessageCircle, MessageSquareWarning, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AppLayout } from "@/components/AppLayout";
@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { CHARACTERS, type CharacterProfile } from "@/data/characters";
+import { FemaleCharacterNotification } from "@/components/FemaleCharacterNotification";
+import { useMessageLimit } from "@/hooks/useMessageLimit";
 import type { Msg } from "@/lib/streamChat";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -22,6 +24,7 @@ type ConversationRow = {
 const Training = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { remaining, isLimitReached, isNearLimit, incrementCount, openWhatsApp, dailyLimit } = useMessageLimit();
   const [selectedProfile, setSelectedProfile] = useState<CharacterProfile | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -125,12 +128,13 @@ const Training = () => {
   };
 
   const send = async () => {
-    if (!input.trim() || isLoading || !selectedProfile) return;
+    if (!input.trim() || isLoading || !selectedProfile || isLimitReached) return;
     const userMsg: Msg = { role: "user", content: input.trim() };
     setInput("");
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setIsLoading(true);
+    incrementCount();
 
     const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/simulate-chat`;
     try {
@@ -227,6 +231,10 @@ const Training = () => {
   if (!selectedProfile) {
     return (
       <AppLayout>
+        <FemaleCharacterNotification onOpenChat={(name) => {
+          const char = CHARACTERS.find((c) => c.name === name);
+          if (char) startNewChat(char);
+        }} />
         <div className="px-5 py-6 space-y-5">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
@@ -353,7 +361,10 @@ const Training = () => {
             <h1 className="font-heading text-base font-bold text-foreground">{selectedProfile.name}</h1>
             <p className="text-[10px] text-muted-foreground">{selectedProfile.description}</p>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${remaining <= 10 ? "bg-red-400/20 text-red-400" : "bg-primary/20 text-primary"}`}>
+              {remaining}/{dailyLimit}
+            </span>
             <span className="text-[10px] glass px-2 py-1 rounded-full text-primary">🎭 Simulation</span>
           </div>
         </div>
@@ -409,19 +420,38 @@ const Training = () => {
           </div>
         )}
 
+        {/* Near limit warning */}
+        {isNearLimit && (
+          <div className="px-4 py-2 bg-yellow-400/10 border-t border-yellow-400/20 flex items-center gap-2">
+            <MessageSquareWarning className="h-4 w-4 text-yellow-400 shrink-0" />
+            <p className="text-[11px] text-yellow-400">Plus que {remaining} messages aujourd'hui !</p>
+          </div>
+        )}
+
         {/* Input */}
         <div className="px-4 py-3 border-t border-border/30">
-          <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex gap-2 items-center">
-            <input type="file" ref={fileRef} accept="image/*,video/*" onChange={handleImageUpload} className="hidden" />
-            <Button type="button" variant="ghost" size="icon" onClick={() => fileRef.current?.click()} className="shrink-0 text-muted-foreground hover:text-primary">
-              <ImagePlus className="h-5 w-5" />
-            </Button>
-            <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder={`Message à ${selectedProfile.name}...`}
-              className="glass border-border/50 rounded-2xl" disabled={isLoading} />
-            <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="gradient-primary rounded-2xl shrink-0">
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
+          {isLimitReached ? (
+            <div className="text-center space-y-3 py-2">
+              <p className="text-sm text-foreground">⚠️ Tu as atteint ta limite de {dailyLimit} messages aujourd'hui.</p>
+              <p className="text-xs text-muted-foreground">Reviens demain pour continuer gratuitement.</p>
+              <Button onClick={openWhatsApp} className="gradient-primary rounded-2xl gap-2">
+                <ExternalLink className="h-4 w-4" />
+                Obtenir plus de messages
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex gap-2 items-center">
+              <input type="file" ref={fileRef} accept="image/*,video/*" onChange={handleImageUpload} className="hidden" />
+              <Button type="button" variant="ghost" size="icon" onClick={() => fileRef.current?.click()} className="shrink-0 text-muted-foreground hover:text-primary">
+                <ImagePlus className="h-5 w-5" />
+              </Button>
+              <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder={`Message à ${selectedProfile.name}...`}
+                className="glass border-border/50 rounded-2xl" disabled={isLoading} />
+              <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="gradient-primary rounded-2xl shrink-0">
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </AppLayout>
