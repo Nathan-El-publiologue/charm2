@@ -1,0 +1,7 @@
+{
+  "appId": "com.charmai.app",
+  "appName": "Charm AI",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
+
