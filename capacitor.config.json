@@ -8,10 +8,12 @@
       "accounts.google.com",
       "*.google.com",
       "*.googleapis.com",
-      "*.supabase.co"
+      "*.supabase.co",
+      "*.firebaseapp.com"
     ]
   },
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "captureInput": true
   }
 }
