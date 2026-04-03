@@ -420,19 +420,38 @@ const Training = () => {
           </div>
         )}
 
+        {/* Near limit warning */}
+        {isNearLimit && (
+          <div className="px-4 py-2 bg-yellow-400/10 border-t border-yellow-400/20 flex items-center gap-2">
+            <MessageSquareWarning className="h-4 w-4 text-yellow-400 shrink-0" />
+            <p className="text-[11px] text-yellow-400">Plus que {remaining} messages aujourd'hui !</p>
+          </div>
+        )}
+
         {/* Input */}
         <div className="px-4 py-3 border-t border-border/30">
-          <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex gap-2 items-center">
-            <input type="file" ref={fileRef} accept="image/*,video/*" onChange={handleImageUpload} className="hidden" />
-            <Button type="button" variant="ghost" size="icon" onClick={() => fileRef.current?.click()} className="shrink-0 text-muted-foreground hover:text-primary">
-              <ImagePlus className="h-5 w-5" />
-            </Button>
-            <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder={`Message à ${selectedProfile.name}...`}
-              className="glass border-border/50 rounded-2xl" disabled={isLoading} />
-            <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="gradient-primary rounded-2xl shrink-0">
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
+          {isLimitReached ? (
+            <div className="text-center space-y-3 py-2">
+              <p className="text-sm text-foreground">⚠️ Tu as atteint ta limite de {dailyLimit} messages aujourd'hui.</p>
+              <p className="text-xs text-muted-foreground">Reviens demain pour continuer gratuitement.</p>
+              <Button onClick={openWhatsApp} className="gradient-primary rounded-2xl gap-2">
+                <ExternalLink className="h-4 w-4" />
+                Obtenir plus de messages
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex gap-2 items-center">
+              <input type="file" ref={fileRef} accept="image/*,video/*" onChange={handleImageUpload} className="hidden" />
+              <Button type="button" variant="ghost" size="icon" onClick={() => fileRef.current?.click()} className="shrink-0 text-muted-foreground hover:text-primary">
+                <ImagePlus className="h-5 w-5" />
+              </Button>
+              <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder={`Message à ${selectedProfile.name}...`}
+                className="glass border-border/50 rounded-2xl" disabled={isLoading} />
+              <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="gradient-primary rounded-2xl shrink-0">
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </AppLayout>
