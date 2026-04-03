@@ -24,6 +24,7 @@ type ConversationRow = {
 const Training = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { remaining, isLimitReached, isNearLimit, incrementCount, openWhatsApp, dailyLimit } = useMessageLimit();
   const [selectedProfile, setSelectedProfile] = useState<CharacterProfile | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
