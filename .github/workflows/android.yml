@@ -6,32 +6,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install & Build
+
+      - name: Install Tools
         run: |
           npm install
-          npm run build
-          npx cap init "Charm AI" com.charmai.app --web-dir dist
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
+
+      - name: Build Web
+        run: npm run build
+
+      - name: Setup Android Project
+        run: |
           npx cap add android
           mkdir -p assets
-          cp logo.png assets/icon.png || echo "No logo found"
-          npx capacitor-assets generate --android || echo "Assets skip"
+          cp logo.png assets/icon.png
+          npx capacitor-assets generate --android
           npx cap sync android
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      - name: Build APK
+
+      - name: Create APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
-      - name: Upload APK
+
+      - name: Deliver APK
         uses: actions/upload-artifact@v4
         with:
-          name: Charm-AI-APK
+          name: Charm-AI-Mobile
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          
