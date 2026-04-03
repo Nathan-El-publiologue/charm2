@@ -33,12 +33,13 @@ jobs:
           mkdir -p assets
           find . -maxdepth 2 -name "logo*" -exec cp {} assets/icon.png \;
           
+          # GÉNÉRATION ET COPIE (C'est ici que l'erreur 404 se règle)
           npx capacitor-assets generate --android || echo "Pas d'assets"
+          npx cap copy android
           npx cap sync android
 
       - name: Correctif Duplicate Classes (Kotlin)
         run: |
-          # Cette commande modifie le fichier build.gradle pour résoudre le conflit de versions Kotlin
           sed -i '/dependencies {/a \    constraints {\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22") { because("Force same version to avoid duplicate classes") }\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22") { because("Force same version to avoid duplicate classes") }\n    }' android/app/build.gradle
 
       - name: Compilation de l'APK
