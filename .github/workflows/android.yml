@@ -1,4 +1,4 @@
-name: Build Charm AI Unbreakable
+name: Build Charm AI Final Fix
 on: [push]
 
 jobs:
@@ -18,12 +18,9 @@ jobs:
           npm install
           npm run build
 
-      - name: Install & Force Downgrade Browser
+      - name: Install Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/app @capacitor/browser
-          # FIX RADICAL : On force la version 1.8.0 dans node_modules pour empêcher Capacitor d'appeler la 1.9.0
-          npm install androidx.browser@1.8.0 --save-exact
-          
           npx cap init "Charm AI" com.charmai.app --web-dir dist || echo "Ok"
           npx cap add android || echo "Ok"
 
@@ -37,18 +34,21 @@ jobs:
           
           npx cap sync android
 
-      - name: 🛠️ SCRIPT ANTI-ÉCHEC (Brutal Fix)
+      - name: 🛠️ FORCE RESOLUTION (Brutal Fix)
         run: |
-          # Force le SDK à 35 partout
+          # On force le SDK à 35
           sed -i 's/compileSdk = .*/compileSdk = 35/' android/variables.gradle
           sed -i 's/targetSdk = .*/targetSdk = 35/' android/variables.gradle
           
-          # Bloque toute tentative de téléchargement de la version 1.9.0 au niveau de Gradle
-          echo "configurations.all {
-              resolutionStrategy {
-                  force 'androidx.browser:browser:1.8.0'
-                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+          # On force Gradle à utiliser la version 1.8.0 pour TOUT le projet
+          # C'est ici que le problème d'API 36 est réglé définitivement
+          echo "subprojects {
+              configurations.all {
+                  resolutionStrategy {
+                      force 'androidx.browser:browser:1.8.0'
+                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+                  }
               }
           }" >> android/build.gradle
 
@@ -61,5 +61,5 @@ jobs:
       - name: Deliver APK
         uses: actions/upload-artifact@v4
         with:
-          name: CharmAI-Ultra-Costaud
+          name: CharmAI-Success
           path: android/app/build/outputs/apk/debug/app-debug.apk
