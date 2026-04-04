@@ -40,10 +40,20 @@ jobs:
           find . -maxdepth 1 -iname "logo*" -exec cp {} assets/icon.png \;
           npx @capacitor/assets generate --android || echo "Pas de logo"
 
-      - name: 🛠️ CORRECTIF VERSION BROWSER (Fix FAILED)
+      - name: 🛠️ FORCE ANDROID COMPATIBILITY (Le Fix)
         run: |
-          # Force l'utilisation d'une version de browser compatible avec l'API 35
-          sed -i '/dependencies {/a \    constraints {\n        implementation("androidx.browser:browser:1.8.0") { because("Version 1.9.0 requires API 36") }\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22")\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22")\n    }' android/app/build.gradle
+          # 1. On force la version du SDK à 35 (le max supporté actuellement par GitHub)
+          sed -i 's/compileSdk = .*/compileSdk = 35/' android/variables.gradle
+          sed -i 's/targetSdk = .*/targetSdk = 35/' android/variables.gradle
+          
+          # 2. On bloque la version de Browser qui fait tout planter
+          echo "configurations.all {
+              resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+                  if (details.requested.group == 'androidx.browser' && details.requested.name == 'browser') {
+                      details.useVersion '1.8.0'
+                  }
+              }
+          }" >> android/build.gradle
 
       - name: Compilation de l'APK
         run: |
@@ -54,5 +64,5 @@ jobs:
       - name: Téléchargement de l'APK
         uses: actions/upload-artifact@v4
         with:
-          name: CharmAI-Final-Success
+          name: CharmAI-Success-Final
           path: android/app/build/outputs/apk/debug/app-debug.apk
