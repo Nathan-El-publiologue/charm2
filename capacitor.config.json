@@ -4,23 +4,9 @@
   "webDir": "dist",
   "server": {
     "androidScheme": "https",
-    "hostname": "charmai.app",
     "allowNavigation": [
       "*.lovable.app",
-      "*.lovable.dev",
-      "accounts.google.com",
-      "*.google.com",
-      "*.supabase.co"
+      "accounts.google.com"
     ]
-  },
-  "plugins": {
-    "App": {
-      "deepLinks": [
-        {
-          "scheme": "com.charmai.app",
-          "host": "auth"
-        }
-      ]
-    }
   }
 }
