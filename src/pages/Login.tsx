@@ -49,10 +49,18 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) throw result.error;
+      if (isNativePlatform()) {
+        // Native: use system browser + deep link callback
+        const result = await nativeGoogleLogin();
+        if (result.error) throw result.error;
+        navigate("/");
+      } else {
+        // Web: use Lovable managed OAuth
+        const result = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin,
+        });
+        if (result.error) throw result.error;
+      }
     } catch (err: any) {
       toast.error(err.message || "Erreur de connexion Google");
     }

@@ -43,6 +43,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    // Initialize deep link listener for native Capacitor auth
+    initDeepLinkListener();
+
     // 1. Restore session from Supabase storage FIRST
     supabase.auth.getSession().then(({ data: { session: restored } }) => {
       if (!mounted) return;
