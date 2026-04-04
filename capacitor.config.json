@@ -9,7 +9,18 @@
       "*.lovable.app",
       "*.lovable.dev",
       "accounts.google.com",
-      "*.google.com"
+      "*.google.com",
+      "*.supabase.co"
     ]
+  },
+  "plugins": {
+    "App": {
+      "deepLinks": [
+        {
+          "scheme": "com.charmai.app",
+          "host": "auth"
+        }
+      ]
+    }
   }
 }
