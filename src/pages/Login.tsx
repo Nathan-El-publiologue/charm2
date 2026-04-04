@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { isNativePlatform, nativeGoogleLogin } from "@/lib/capacitorAuth";
 import { Navigate } from "react-router-dom";
 
 const Login = () => {
