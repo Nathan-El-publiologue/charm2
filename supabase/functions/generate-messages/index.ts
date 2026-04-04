@@ -42,7 +42,7 @@ Réponds UNIQUEMENT avec un JSON: {"messages": ["msg1", "msg2", "msg3"]}`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash-lite",
         messages: [
           { role: "system", content: "Tu es un expert en séduction respectueuse. Réponds uniquement en JSON valide." },
           { role: "user", content: prompt },
