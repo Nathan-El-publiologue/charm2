@@ -13,32 +13,41 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: Build Web (Production)
+      - name: Build Web
         run: |
           npm install
           npm run build
 
-      - name: Init & Sync Android
+      - name: Init Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/app @capacitor/browser
-          # On s'assure que le projet est propre
           npx cap init "Charm AI" com.charmai.app --web-dir dist
-          npx cap add android || echo "Déjà ajouté"
-          npx cap sync android
+          npx cap add android
 
-      - name: 🛠️ CONFIGURATION FINALE (Logo + Google + No Bar)
+      - name: 🛠️ CONFIGURATION NATIVE (Fix Kotlin + Google)
         run: |
-          # 1. LOGO : Génération des 74 fichiers pour la netteté
+          # 1. LOGO
           npm install -g @capacitor/assets
           mkdir -p assets
           cp "logo. png" assets/icon.png || cp logo.png assets/icon.png
           capacitor-assets generate --android
 
-          # 2. FIX GOOGLE (Comme demandé par Lovable)
+          # 2. FIX GOOGLE (Injection précise)
           sed -i '/<intent-filter>/i \        <intent-filter>\n            <action android:name="android.intent.action.VIEW" />\n            <category android:name="android.intent.category.DEFAULT" />\n            <category android:name="android.intent.category.BROWSABLE" />\n            <data android:scheme="com.charmai.app" android:host="auth" />\n        </intent-filter>' android/app/src/main/AndroidManifest.xml
 
-          # 3. FIX VERSION API 35
-          echo "allprojects { configurations.all { resolutionStrategy.force 'androidx.browser:browser:1.8.0' } }" >> android/build.gradle
+          # 3. FIX KOTLIN DUPLICATE & API 35
+          # On force la résolution des conflits Kotlin qui font échouer ton build actuel
+          echo "allprojects {
+              configurations.all {
+                  resolutionStrategy {
+                      force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+                      force 'androidx.browser:browser:1.8.0'
+                  }
+              }
+          }" >> android/build.gradle
+          
           sed -i 's/compileSdk = .*/compileSdk = 35/' android/variables.gradle
           sed -i 's/targetSdk = .*/targetSdk = 35/' android/variables.gradle
 
@@ -50,8 +59,8 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: Livraison APK
+      - name: Télécharger l'APK
         uses: actions/upload-artifact@v4
         with:
-          name: CharmAI-Production
+          name: CharmAI-Success-Final
           path: android/app/build/outputs/apk/debug/app-debug.apk
