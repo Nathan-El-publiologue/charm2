@@ -1,4 +1,4 @@
-name: Build Charm AI Lovable Fix
+name: Build Charm AI Final Fix
 on: [push]
 
 jobs:
@@ -24,20 +24,32 @@ jobs:
           npx cap init "Charm AI" com.charmai.app --web-dir dist
           npx cap add android
 
-      - name: 🛠️ CONFIGURATION FINALE (Logo + Google)
+      - name: 🛠️ CONFIGURATION NATIVE (Logo + Google Fix)
         run: |
-          # 1. FIX LOGO (On le copie manuellement pour éviter les erreurs d'outils)
+          # 1. FIX GOOGLE (Injection propre dans le Manifest)
+          # On remplace la ligne de l'activité pour insérer le code Lovable juste après
+          python3 -c "
+          import os
+          path = 'android/app/src/main/AndroidManifest.xml'
+          with open(path, 'r') as f: content = f.read()
+          intent = '''
+                  <intent-filter>
+                      <action android:name=\"android.intent.action.VIEW\" />
+                      <category android:name=\"android.intent.category.DEFAULT\" />
+                      <category android:name=\"android.intent.category.BROWSABLE\" />
+                      <data android:scheme=\"com.charmai.app\" android:host=\"auth\" />
+                  </intent-filter>'''
+          new_content = content.replace('<activity', intent + '\n        <activity')
+          with open(path, 'w') as f: f.write(new_content)
+          "
+
+          # 2. FIX LOGO
           mkdir -p assets
           cp "logo. png" assets/icon.png || cp logo.png assets/icon.png
           npm install -g @capacitor/assets
-          capacitor-assets generate --android || echo "Le logo sera ajouté plus tard"
+          capacitor-assets generate --android || echo "Logo ignoré pour éviter l'échec"
 
-          # 2. FIX GOOGLE (L'ordre de Lovable)
-          # On insère le filtre d'intention dans le Manifest
-          sed -i '/<activity/a \        <intent-filter>\n            <action android:name="android.intent.action.VIEW" />\n            <category android:name="android.intent.category.DEFAULT" />\n            <category android:name="android.intent.category.BROWSABLE" />\n            <data android:scheme="com.charmai.app" android:host="auth" />\n        </intent-filter>' android/app/src/main/AndroidManifest.xml
-
-          # 3. FIX VERSION API 35 (Pour éviter le crash Gradle)
-          # On crée un fichier de résolution propre
+          # 3. FIX VERSION API 35 (C'est ce qui a marché dans ton dernier log !)
           echo "allprojects {
               configurations.all {
                   resolutionStrategy {
@@ -48,7 +60,6 @@ jobs:
               }
           }" >> android/build.gradle
           
-          # Force le SDK 35
           sed -i 's/compileSdk = .*/compileSdk = 35/' android/variables.gradle
           sed -i 's/targetSdk = .*/targetSdk = 35/' android/variables.gradle
 
@@ -63,5 +74,5 @@ jobs:
       - name: Télécharger l'APK
         uses: actions/upload-artifact@v4
         with:
-          name: CharmAI-Final-Success
+          name: CharmAI-Final-Stable
           path: android/app/build/outputs/apk/debug/app-debug.apk
