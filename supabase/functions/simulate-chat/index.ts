@@ -5,14 +5,93 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+async function callLovable(messages: any[], systemPrompt: string) {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash-lite",
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    const t = await response.text();
+    throw new Error(`Lovable error ${response.status}: ${t}`);
+  }
+  return response;
+}
+
+async function callGemini(messages: any[], systemPrompt: string) {
+  const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
+
+  const geminiMessages = messages.map((m: any) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: geminiMessages,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const t = await response.text();
+    throw new Error(`Gemini error ${response.status}: ${t}`);
+  }
+
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder();
+      let buf = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, idx);
+          buf = buf.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const json = line.slice(6).trim();
+          if (json === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(json);
+            const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              const chunk = JSON.stringify({ choices: [{ delta: { content: text } }] });
+              controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
+            }
+          } catch {}
+        }
+      }
+      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+      controller.close();
+    },
+  });
+  return new Response(stream);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const { messages, targetName, targetPersonality } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
     const p = targetPersonality || {};
 
     const systemPrompt = `# RÔLE
@@ -53,38 +132,12 @@ Simuler une conversation réaliste pour que l'utilisateur s'entraîne à la séd
 8. N'hésite pas à poser des questions pour montrer ton intérêt
 9. Reste COHÉRENTE avec ta personnalité tout au long de la conversation`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-        stream: true,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Trop de requêtes. Réessayez dans un moment." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Crédits IA épuisés." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "Erreur du service IA" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let response: Response;
+    try {
+      response = await callLovable(messages, systemPrompt);
+    } catch (e) {
+      console.warn("Lovable failed, switching to Gemini:", e);
+      response = await callGemini(messages, systemPrompt);
     }
 
     return new Response(response.body, {
