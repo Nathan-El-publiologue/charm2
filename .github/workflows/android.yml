@@ -7,48 +7,52 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Java 21
+      - name: Configuration Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: Build Web Application
+      - name: Build Web (Code de Lovable)
         run: |
           npm install
           npm run build
 
-      - name: Setup Capacitor & Assets
+      - name: Initialisation Capacitor & Plugins
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
-          npx cap init "Charm AI" com.charmai.app --web-dir dist || echo "Ok"
-          npx cap add android || echo "Ok"
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/app @capacitor/browser
+          npx cap init "Charm AI" com.charmai.app --web-dir dist || echo "Déjà fait"
+          npx cap add android || echo "Déjà fait"
+
+      - name: Configuration Deep Links (Le fix de Lovable)
+        run: |
+          # Cette commande ajoute automatiquement le code de redirection Google dans AndroidManifest.xml
+          sed -i '/<intent-filter>/i \        <intent-filter>\n            <action android:name="android.intent.action.VIEW" />\n            <category android:name="android.intent.category.DEFAULT" />\n            <category android:name="android.intent.category.BROWSABLE" />\n            <data android:scheme="com.charmai.app" android:host="auth" />\n        </intent-filter>' android/app/src/main/AndroidManifest.xml
           
-          # Correction du logo : cherche n'importe quel logo et le place au bon endroit
-          mkdir -p assets
-          find . -maxdepth 2 -iname "logo*" -exec cp {} assets/icon.png \;
-          npx capacitor-assets generate --android || echo "Assets skip"
+          # Mise à jour de capacitor.config.json pour Lovable
+          echo '{"appId":"com.charmai.app","appName":"Charm AI","webDir":"dist","server":{"androidScheme":"https","allowNavigation":["*.lovable.app","accounts.google.com"]}}' > capacitor.config.json
           
-          # IMPORTANT : Synchronise le JSON et les fichiers Web
-          npx cap copy android
           npx cap sync android
 
-      - name: Fix Android Environment
+      - name: Gestion du Logo
         run: |
-          # Supprime les doublons Kotlin qui font échouer le build
-          sed -i '/dependencies {/a \    constraints {\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22")\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22")\n    }' android/app/build.gradle
-          
-          # Autorise le trafic HTTP en plus du HTTPS au cas où
-          sed -i 's/android:fullBackupContent="true"/android:fullBackupContent="true" android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
+          mkdir -p assets
+          # On cherche le logo peu importe son nom (avec ou sans espace)
+          find . -maxdepth 1 -iname "logo*" -exec cp {} assets/icon.png \;
+          npx @capacitor/assets generate --android || echo "Pas de logo"
 
-      - name: Final Compilation
+      - name: Correctif Doublons Kotlin
+        run: |
+          sed -i '/dependencies {/a \    constraints {\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22")\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22")\n    }' android/app/build.gradle
+
+      - name: Compilation de l'APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload Functional APK
+      - name: Téléchargement de l'APK
         uses: actions/upload-artifact@v4
         with:
-          name: CharmAI-Full-Fix
+          name: CharmAI-Final-Fix
           path: android/app/build/outputs/apk/debug/app-debug.apk
