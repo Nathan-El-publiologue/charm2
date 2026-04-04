@@ -1,4 +1,4 @@
-name: Build Charm AI Final Fix
+name: Build Charm AI Lovable Fix
 on: [push]
 
 jobs:
@@ -18,38 +18,39 @@ jobs:
           npm install
           npm run build
 
-      - name: Capacitor Sync
+      - name: Create Android Platform
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/app @capacitor/browser
-          npx cap sync android
+          npx cap init "Charm AI" com.charmai.app --web-dir dist
+          npx cap add android
 
-      - name: 🛠️ FIX LOGO & GOOGLE (Zéro Erreur)
+      - name: 🛠️ INJECTION DES INSTRUCTIONS LOVABLE
         run: |
-          # 1. FIX DU LOGO : On force ton icône "logo. png"
+          # 1. FIX GOOGLE (Ce qui est écrit en vert dans ta photo)
+          # On insère EXACTEMENT le filtre d'intention demandé par Lovable
+          sed -i '/<activity/a \        <intent-filter>\n            <action android:name="android.intent.action.VIEW" />\n            <category android:name="android.intent.category.DEFAULT" />\n            <category android:name="android.intent.category.BROWSABLE" />\n            <data android:scheme="com.charmai.app" android:host="auth" />\n        </intent-filter>' android/app/src/main/AndroidManifest.xml
+
+          # 2. FIX LOGO
           npm install -g @capacitor/assets
           mkdir -p assets
           cp "logo. png" assets/icon.png || cp logo.png assets/icon.png
-          # On génère les icônes Android à partir de ton logo
           capacitor-assets generate --android
 
-          # 2. FIX 404 GOOGLE : Injection du filtre d'intention Lovable
-          # On l'insère précisément dans le Manifest pour que com.charmai.app://auth fonctionne
-          sed -i '/<activity/a \        <intent-filter>\n            <action android:name="android.intent.action.VIEW" />\n            <category android:name="android.intent.category.DEFAULT" />\n            <category android:name="android.intent.category.BROWSABLE" />\n            <data android:scheme="com.charmai.app" android:host="auth" />\n        </intent-filter>' android/app/src/main/AndroidManifest.xml
-
-          # 3. FIX API 36 : On bloque la version de browser qui fait planter Gradle
+          # 3. FIX ERREUR GRADLE (API 35)
           echo "allprojects { configurations.all { resolutionStrategy.force 'androidx.browser:browser:1.8.0' } }" >> android/build.gradle
-          # On force le SDK 35 (compatible avec GitHub Actions)
           sed -i 's/compileSdk = .*/compileSdk = 35/' android/variables.gradle
           sed -i 's/targetSdk = .*/targetSdk = 35/' android/variables.gradle
 
-      - name: Compilation APK
+          npx cap sync android
+
+      - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: Livraison APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: CharmAI-Final-Success
+          name: CharmAI-Lovable-Fix
           path: android/app/build/outputs/apk/debug/app-debug.apk
