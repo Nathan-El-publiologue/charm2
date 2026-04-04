@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { initDeepLinkListener } from "@/lib/capacitorAuth";
 
 interface AuthContextType {
   session: Session | null;
@@ -41,6 +42,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
+
+    // Initialize deep link listener for native Capacitor auth
+    initDeepLinkListener();
 
     // 1. Restore session from Supabase storage FIRST
     supabase.auth.getSession().then(({ data: { session: restored } }) => {

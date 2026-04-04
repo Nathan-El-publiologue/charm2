@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { isNativePlatform, nativeGoogleLogin } from "@/lib/capacitorAuth";
 import { Navigate } from "react-router-dom";
 
 const Login = () => {
@@ -48,10 +49,18 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) throw result.error;
+      if (isNativePlatform()) {
+        // Native: use system browser + deep link callback
+        const result = await nativeGoogleLogin();
+        if (result.error) throw result.error;
+        navigate("/");
+      } else {
+        // Web: use Lovable managed OAuth
+        const result = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin,
+        });
+        if (result.error) throw result.error;
+      }
     } catch (err: any) {
       toast.error(err.message || "Erreur de connexion Google");
     }
