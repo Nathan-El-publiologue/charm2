@@ -1,4 +1,4 @@
-name: Build Charm AI Final Fix
+name: Build Charm AI Final Unstoppable
 on: [push]
 
 jobs:
@@ -18,48 +18,57 @@ jobs:
           npm install
           npm run build
 
-      - name: Initialisation Capacitor
+      - name: Init Android Neuve
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/app @capacitor/browser
           npx cap init "Charm AI" com.charmai.app --web-dir dist
           npx cap add android
 
-      - name: 🛠️ CONFIGURATION NATIVE (Logo + Google Fix)
+      - name: 🛠️ INJECTION DU MANIFEST PARFAIT
         run: |
-          # 1. FIX GOOGLE (Injection propre dans le Manifest)
-          # On remplace la ligne de l'activité pour insérer le code Lovable juste après
-          python3 -c "
-          import os
-          path = 'android/app/src/main/AndroidManifest.xml'
-          with open(path, 'r') as f: content = f.read()
-          intent = '''
-                  <intent-filter>
-                      <action android:name=\"android.intent.action.VIEW\" />
-                      <category android:name=\"android.intent.category.DEFAULT\" />
-                      <category android:name=\"android.intent.category.BROWSABLE\" />
-                      <data android:scheme=\"com.charmai.app\" android:host=\"auth\" />
-                  </intent-filter>'''
-          new_content = content.replace('<activity', intent + '\n        <activity')
-          with open(path, 'w') as f: f.write(new_content)
-          "
+          # On crée le fichier Manifest exact que Lovable et Android demandent
+          cat <<EOF > android/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="Charm AI"
+                  android:roundIcon="@mipmap/ic_launcher_round"
+                  android:supportsRtl="true"
+                  android:theme="@style/AppTheme">
+                  <activity
+                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+                      android:name="com.charmai.app.MainActivity"
+                      android:label="Charm AI"
+                      android:theme="@style/AppTheme.NoActionBarLauncher"
+                      android:launchMode="singleTask"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                      <intent-filter>
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+                          <data android:scheme="com.charmai.app" android:host="auth" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
 
-          # 2. FIX LOGO
+      - name: 🛠️ FIX LOGO & GRADLE
+        run: |
+          # 1. Logo
           mkdir -p assets
           cp "logo. png" assets/icon.png || cp logo.png assets/icon.png
           npm install -g @capacitor/assets
-          capacitor-assets generate --android || echo "Logo ignoré pour éviter l'échec"
+          capacitor-assets generate --android || echo "Logo skip"
 
-          # 3. FIX VERSION API 35 (C'est ce qui a marché dans ton dernier log !)
-          echo "allprojects {
-              configurations.all {
-                  resolutionStrategy {
-                      force 'androidx.browser:browser:1.8.0'
-                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
-                  }
-              }
-          }" >> android/build.gradle
-          
+          # 2. Fix API 35 (Anti-erreur 36)
+          echo "allprojects { configurations.all { resolutionStrategy.force 'androidx.browser:browser:1.8.0' } }" >> android/build.gradle
           sed -i 's/compileSdk = .*/compileSdk = 35/' android/variables.gradle
           sed -i 's/targetSdk = .*/targetSdk = 35/' android/variables.gradle
 
@@ -71,8 +80,8 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: Télécharger l'APK
+      - name: Livraison APK
         uses: actions/upload-artifact@v4
         with:
-          name: CharmAI-Final-Stable
+          name: CharmAI-SUCCESS
           path: android/app/build/outputs/apk/debug/app-debug.apk
