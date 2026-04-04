@@ -1,4 +1,4 @@
-name: Build Charm AI Total Fix
+name: Build Charm AI Final Fix
 on: [push]
 
 jobs:
@@ -21,15 +21,15 @@ jobs:
       - name: Initialisation Capacitor & Plugins
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/app @capacitor/browser
-          npx cap init "Charm AI" com.charmai.app --web-dir dist || echo "Déjà fait"
-          npx cap add android || echo "Déjà fait"
+          npx cap init "Charm AI" com.charmai.app --web-dir dist || echo "Ok"
+          npx cap add android || echo "Ok"
 
-      - name: Configuration Deep Links (Le fix de Lovable)
+      - name: Configuration Deep Links (Fix Lovable)
         run: |
-          # Cette commande ajoute automatiquement le code de redirection Google dans AndroidManifest.xml
+          # Injection du code de redirection dans AndroidManifest.xml
           sed -i '/<intent-filter>/i \        <intent-filter>\n            <action android:name="android.intent.action.VIEW" />\n            <category android:name="android.intent.category.DEFAULT" />\n            <category android:name="android.intent.category.BROWSABLE" />\n            <data android:scheme="com.charmai.app" android:host="auth" />\n        </intent-filter>' android/app/src/main/AndroidManifest.xml
           
-          # Mise à jour de capacitor.config.json pour Lovable
+          # Mise à jour de capacitor.config.json
           echo '{"appId":"com.charmai.app","appName":"Charm AI","webDir":"dist","server":{"androidScheme":"https","allowNavigation":["*.lovable.app","accounts.google.com"]}}' > capacitor.config.json
           
           npx cap sync android
@@ -37,13 +37,13 @@ jobs:
       - name: Gestion du Logo
         run: |
           mkdir -p assets
-          # On cherche le logo peu importe son nom (avec ou sans espace)
           find . -maxdepth 1 -iname "logo*" -exec cp {} assets/icon.png \;
           npx @capacitor/assets generate --android || echo "Pas de logo"
 
-      - name: Correctif Doublons Kotlin
+      - name: 🛠️ CORRECTIF VERSION BROWSER (Fix FAILED)
         run: |
-          sed -i '/dependencies {/a \    constraints {\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22")\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22")\n    }' android/app/build.gradle
+          # Force l'utilisation d'une version de browser compatible avec l'API 35
+          sed -i '/dependencies {/a \    constraints {\n        implementation("androidx.browser:browser:1.8.0") { because("Version 1.9.0 requires API 36") }\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22")\n        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22")\n    }' android/app/build.gradle
 
       - name: Compilation de l'APK
         run: |
@@ -54,5 +54,5 @@ jobs:
       - name: Téléchargement de l'APK
         uses: actions/upload-artifact@v4
         with:
-          name: CharmAI-Final-Fix
+          name: CharmAI-Final-Success
           path: android/app/build/outputs/apk/debug/app-debug.apk
