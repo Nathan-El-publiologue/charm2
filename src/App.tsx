@@ -44,6 +44,8 @@ const App = () => {
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/auth" element={<AuthCallback />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/" element={<AuthGuard><Index /></AuthGuard>} />
             <Route path="/chat" element={<AuthGuard><Chat /></AuthGuard>} />
             <Route path="/search" element={<AuthGuard><Search /></AuthGuard>} />

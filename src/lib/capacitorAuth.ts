@@ -3,86 +3,87 @@ import { Browser } from "@capacitor/browser";
 import { App } from "@capacitor/app";
 import { supabase } from "@/integrations/supabase/client";
 
-/**
- * Detect if running inside a native Capacitor shell
- */
 export const isNativePlatform = () => Capacitor.isNativePlatform();
 
-/**
- * The published web URL – OAuth will redirect here first,
- * then the page redirects to the custom scheme to re-enter the app.
- */
-const PUBLISHED_URL = "https://charm2.lovable.app";
-
-/**
- * Custom URL scheme for deep linking back into the native app.
- */
+const SUPABASE_URL = "https://ncplcqdourqxpzkjgiow.supabase.co";
 const APP_SCHEME = "com.charmai.app";
 
 /**
- * Handle Google OAuth on native Capacitor:
- * 1. Open the published login page in the system browser
- * 2. The web login completes OAuth and stores the session
- * 3. The web page redirects to our custom scheme with tokens
- * 4. The App plugin catches the deep link
- * 5. We extract tokens and set the Supabase session
+ * Handle Google OAuth on native Capacitor.
+ * Opens Supabase OAuth directly in system browser, redirecting back to custom scheme.
  */
 export async function nativeGoogleLogin(): Promise<{ error?: Error }> {
   return new Promise((resolve) => {
-    // Listen for the deep link callback
+    let resolved = false;
+
     const listener = App.addListener("appUrlOpen", async ({ url }) => {
+      if (resolved) return;
       try {
-        // Parse tokens from the URL fragment
-        const hashParams = new URLSearchParams(url.split("#")[1] || "");
-        const accessToken = hashParams.get("access_token");
-        const refreshToken = hashParams.get("refresh_token");
+        // Parse tokens from fragment or query
+        const hashPart = url.split("#")[1] || "";
+        const queryPart = url.split("?")[1]?.split("#")[0] || "";
+        const hashParams = new URLSearchParams(hashPart);
+        const queryParams = new URLSearchParams(queryPart);
+
+        const accessToken = hashParams.get("access_token") || queryParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token") || queryParams.get("refresh_token");
 
         if (accessToken && refreshToken) {
+          resolved = true;
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
-          if (error) {
-            resolve({ error });
-          } else {
-            resolve({});
-          }
+          resolve(error ? { error } : {});
         } else {
+          resolved = true;
           resolve({ error: new Error("Aucun token reçu depuis l'authentification") });
         }
       } catch (e) {
+        resolved = true;
         resolve({ error: e instanceof Error ? e : new Error(String(e)) });
       } finally {
-        // Clean up
         listener.then((l) => l.remove());
         Browser.close().catch(() => {});
       }
     });
 
-    // Open the published site's OAuth callback page in system browser
-    // This page will handle OAuth and redirect back with tokens
-    const oauthUrl = `${PUBLISHED_URL}/native-auth-callback`;
+    // Build the OAuth URL with custom scheme redirect
+    const redirectUrl = `${APP_SCHEME}://auth`;
+    const oauthUrl = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
+
     Browser.open({ url: oauthUrl, presentationStyle: "fullscreen" }).catch((e) => {
-      listener.then((l) => l.remove());
-      resolve({ error: e instanceof Error ? e : new Error(String(e)) });
+      if (!resolved) {
+        resolved = true;
+        listener.then((l) => l.remove());
+        resolve({ error: e instanceof Error ? e : new Error(String(e)) });
+      }
     });
+
+    // Timeout after 2 minutes
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        listener.then((l) => l.remove());
+        resolve({ error: new Error("Délai d'authentification dépassé") });
+      }
+    }, 120000);
   });
 }
 
 /**
  * Initialize deep link listener for auth callbacks.
- * Call this once in your app root (AuthContext).
  */
 export function initDeepLinkListener() {
   if (!isNativePlatform()) return;
 
   App.addListener("appUrlOpen", async ({ url }) => {
-    // Only handle auth-related deep links
     if (!url.includes("access_token")) return;
 
     const hashParams = new URLSearchParams(url.split("#")[1] || "");
-    const accessToken = hashParams.get("access_token");
-    const refreshToken = hashParams.get("refresh_token");
+    const queryParams = new URLSearchParams(url.split("?")[1]?.split("#")[0] || "");
+    const accessToken = hashParams.get("access_token") || queryParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token") || queryParams.get("refresh_token");
 
     if (accessToken && refreshToken) {
       await supabase.auth.setSession({
@@ -94,7 +95,6 @@ export function initDeepLinkListener() {
     Browser.close().catch(() => {});
   });
 
-  // Also handle resume – refresh session when app comes back to foreground
   App.addListener("resume", async () => {
     await supabase.auth.getSession();
   });
