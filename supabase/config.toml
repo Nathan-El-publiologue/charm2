@@ -1,1 +1,4 @@
 project_id = "ncplcqdourqxpzkjgiow"
+
+[auth]
+additional_redirect_urls = ["com.charmai.app://auth", "https://charm2.lovable.app/native-auth-callback.html", "https://charm2.lovable.app"]
