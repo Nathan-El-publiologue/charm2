@@ -34,25 +34,22 @@
     <p>Connexion en cours...</p>
   </div>
   <script>
-    // This page is opened in the system browser on native.
-    // It triggers the Lovable OAuth flow and then redirects back to the app.
-    const SUPABASE_URL = "https://ncplcqdourqxpzkjgiow.supabase.co";
     const APP_SCHEME = "com.charmai.app";
-
-    // Check if we have tokens in the URL hash (after OAuth redirect)
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
     const accessToken = params.get("access_token");
     const refreshToken = params.get("refresh_token");
 
     if (accessToken && refreshToken) {
-      // Redirect back to the native app with tokens
-      window.location.href = `${APP_SCHEME}://auth#access_token=${accessToken}&refresh_token=${refreshToken}`;
+      // Redirect back to native app with tokens
+      window.location.href = APP_SCHEME + "://auth#access_token=" + accessToken + "&refresh_token=" + refreshToken;
+      // Fallback: if custom scheme doesn't work, redirect to web app
+      setTimeout(function() {
+        window.location.href = "/#access_token=" + accessToken + "&refresh_token=" + refreshToken;
+      }, 3000);
     } else {
-      // No tokens yet – start the OAuth flow
-      // Redirect to Supabase OAuth with this page as the redirect target
-      const redirectUrl = window.location.origin + window.location.pathname;
-      window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
+      // No tokens - redirect to home
+      window.location.href = "/";
     }
   </script>
 </body>
