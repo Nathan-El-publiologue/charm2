@@ -23,34 +23,25 @@ async function callLovableNonStream(messages: any[]) {
   return data.choices?.[0]?.message?.content || '{"messages":[]}';
 }
 
-async function callGeminiNonStream(messages: any[]) {
-  const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
+async function callOpenRouterNonStream(messages: any[], model = "qwen/qwen3-next-80b-a3b-instruct:free") {
+  const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+  if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY not configured");
 
-  const systemMsg = messages.find((m: any) => m.role === "system");
-  const userMsgs = messages.filter((m: any) => m.role !== "system").map((m: any) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...(systemMsg ? { system_instruction: { parts: [{ text: systemMsg.content }] } } : {}),
-        contents: userMsgs,
-      }),
-    }
-  );
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ model, messages }),
+  });
 
   if (!response.ok) {
     const t = await response.text();
-    throw new Error(`Gemini error ${response.status}: ${t}`);
+    throw new Error(`OpenRouter error ${response.status}: ${t}`);
   }
   const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '{"messages":[]}';
+  return data.choices?.[0]?.message?.content || '{"messages":[]}';
 }
 
 serve(async (req) => {
@@ -89,8 +80,13 @@ Réponds UNIQUEMENT avec un JSON: {"messages": ["msg1", "msg2", "msg3"]}`;
     try {
       content = await callLovableNonStream(messages);
     } catch (e) {
-      console.warn("Lovable failed, switching to Gemini:", e);
-      content = await callGeminiNonStream(messages);
+      console.warn("Lovable failed, switching to OpenRouter:", e);
+      try {
+        content = await callOpenRouterNonStream(messages);
+      } catch (e2) {
+        console.warn("OpenRouter primary failed, using auto fallback:", e2);
+        content = await callOpenRouterNonStream(messages, "openrouter/auto");
+      }
     }
 
     let parsed;
