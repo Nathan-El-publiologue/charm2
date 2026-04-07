@@ -32,37 +32,34 @@ async function callLovableVision(image: string, systemPrompt: string) {
   return data.choices?.[0]?.message?.content || "";
 }
 
-async function callGeminiVision(image: string, systemPrompt: string) {
-  const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
+async function callOpenRouterVision(image: string, systemPrompt: string, model = "qwen/qwen3-next-80b-a3b-instruct:free") {
+  const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+  if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY not configured");
 
-  const match = image.match(/^data:(.*?);base64,(.*)$/);
-  const parts: any[] = [{ text: "Analyse ce profil dating et donne-moi des conseils pour l'améliorer." }];
-  
-  if (match) {
-    parts.push({ inline_data: { mime_type: match[1], data: match[2] } });
-  } else {
-    parts.push({ text: `[Image URL: ${image}]` });
-  }
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ role: "user", parts }],
-      }),
-    }
-  );
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: [
+          { type: "text", text: "Analyse ce profil dating et donne-moi des conseils pour l'améliorer." },
+          { type: "image_url", image_url: { url: image } },
+        ]},
+      ],
+    }),
+  });
 
   if (!response.ok) {
     const t = await response.text();
-    throw new Error(`Gemini error ${response.status}: ${t}`);
+    throw new Error(`OpenRouter error ${response.status}: ${t}`);
   }
   const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  return data.choices?.[0]?.message?.content || "";
 }
 
 serve(async (req) => {
@@ -97,8 +94,13 @@ Sois constructif, précis et bienveillant. Donne des conseils actionnables.`;
     try {
       content = await callLovableVision(image, systemPrompt);
     } catch (e) {
-      console.warn("Lovable failed, switching to Gemini:", e);
-      content = await callGeminiVision(image, systemPrompt);
+      console.warn("Lovable failed, switching to OpenRouter:", e);
+      try {
+        content = await callOpenRouterVision(image, systemPrompt);
+      } catch (e2) {
+        console.warn("OpenRouter primary failed, using auto fallback:", e2);
+        content = await callOpenRouterVision(image, systemPrompt, "openrouter/auto");
+      }
     }
 
     try {

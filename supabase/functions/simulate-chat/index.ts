@@ -26,65 +26,28 @@ async function callLovable(messages: any[], systemPrompt: string) {
   return response;
 }
 
-async function callGemini(messages: any[], systemPrompt: string) {
-  const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
+async function callOpenRouter(messages: any[], systemPrompt: string, model = "qwen/qwen3-next-80b-a3b-instruct:free") {
+  const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+  if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY not configured");
 
-  const geminiMessages = messages.map((m: any) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: geminiMessages,
-      }),
-    }
-  );
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
+      stream: true,
+    }),
+  });
 
   if (!response.ok) {
     const t = await response.text();
-    throw new Error(`Gemini error ${response.status}: ${t}`);
+    throw new Error(`OpenRouter error ${response.status}: ${t}`);
   }
-
-  const reader = response.body!.getReader();
-  const decoder = new TextDecoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      let buf = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx);
-          buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const json = line.slice(6).trim();
-          if (json === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(json);
-            const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              const chunk = JSON.stringify({ choices: [{ delta: { content: text } }] });
-              controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
-            }
-          } catch {}
-        }
-      }
-      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-      controller.close();
-    },
-  });
-  return new Response(stream);
+  return response;
 }
 
 serve(async (req) => {
@@ -136,8 +99,13 @@ Simuler une conversation réaliste pour que l'utilisateur s'entraîne à la séd
     try {
       response = await callLovable(messages, systemPrompt);
     } catch (e) {
-      console.warn("Lovable failed, switching to Gemini:", e);
-      response = await callGemini(messages, systemPrompt);
+      console.warn("Lovable failed, switching to OpenRouter:", e);
+      try {
+        response = await callOpenRouter(messages, systemPrompt);
+      } catch (e2) {
+        console.warn("OpenRouter primary failed, using auto fallback:", e2);
+        response = await callOpenRouter(messages, systemPrompt, "openrouter/auto");
+      }
     }
 
     return new Response(response.body, {
