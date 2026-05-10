@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { CHARACTERS, type CharacterProfile } from "@/data/characters";
 import { FemaleCharacterNotification } from "@/components/FemaleCharacterNotification";
+import { CharacterProfileModal } from "@/components/CharacterProfileModal";
 import { useMessageLimit } from "@/hooks/useMessageLimit";
 import type { Msg } from "@/lib/streamChat";
 import type { Json } from "@/integrations/supabase/types";
@@ -26,6 +27,7 @@ const Training = () => {
   const { user } = useAuth();
   const { remaining, isLimitReached, isNearLimit, incrementCount, openWhatsApp, dailyLimit } = useMessageLimit();
   const [selectedProfile, setSelectedProfile] = useState<CharacterProfile | null>(null);
+  const [previewProfile, setPreviewProfile] = useState<CharacterProfile | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
