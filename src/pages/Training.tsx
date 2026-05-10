@@ -345,6 +345,15 @@ const Training = () => {
             )}
           </AnimatePresence>
         </div>
+        <CharacterProfileModal
+          character={previewProfile}
+          kind="female"
+          onClose={() => setPreviewProfile(null)}
+          onStartChat={() => {
+            if (previewProfile) startNewChat(previewProfile);
+            setPreviewProfile(null);
+          }}
+        />
       </AppLayout>
     );
   }
@@ -358,11 +367,17 @@ const Training = () => {
           <Button variant="ghost" size="icon" onClick={() => { setSelectedProfile(null); setMessages([]); setImagePreview(null); setActiveConvoId(null); }}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <img src={selectedProfile.image} alt={selectedProfile.name} className="h-9 w-9 rounded-full object-cover border-2 border-primary/30" />
-          <div>
-            <h1 className="font-heading text-base font-bold text-foreground">{selectedProfile.name}</h1>
-            <p className="text-[10px] text-muted-foreground">{selectedProfile.description}</p>
-          </div>
+          <button
+            onClick={() => setPreviewProfile(selectedProfile)}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            aria-label={`Voir le profil de ${selectedProfile.name}`}
+          >
+            <img src={selectedProfile.image} alt={selectedProfile.name} className="h-9 w-9 rounded-full object-cover border-2 border-primary/30" />
+            <div className="text-left">
+              <h1 className="font-heading text-base font-bold text-foreground">{selectedProfile.name}</h1>
+              <p className="text-[10px] text-muted-foreground">{selectedProfile.description}</p>
+            </div>
+          </button>
           <div className="ml-auto flex items-center gap-2">
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${remaining <= 10 ? "bg-red-400/20 text-red-400" : "bg-primary/20 text-primary"}`}>
               {remaining}/{dailyLimit}
