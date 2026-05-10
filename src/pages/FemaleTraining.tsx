@@ -80,6 +80,15 @@ const FemaleTraining = () => {
           ))}
         </div>
       </div>
+      <CharacterProfileModal
+        character={previewChar}
+        kind="male"
+        onClose={() => setPreviewChar(null)}
+        onStartChat={() => {
+          if (previewChar) startConversation(previewChar);
+          setPreviewChar(null);
+        }}
+      />
     </AppLayout>
   );
 };
