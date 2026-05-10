@@ -327,7 +327,7 @@ const Training = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             whileTap={{ scale: 0.96 }}
-                            onClick={() => startNewChat(char)}
+                            onClick={() => setPreviewProfile(char)}
                             className="glass rounded-2xl p-4 flex flex-col items-center gap-3 text-center hover:border-primary/50 transition-all"
                           >
                             <img src={char.image} alt={char.name} className="h-20 w-20 rounded-full object-cover border-2 border-primary/30" loading="lazy" width={80} height={80} />
