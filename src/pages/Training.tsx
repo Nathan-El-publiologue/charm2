@@ -471,6 +471,12 @@ const Training = () => {
           )}
         </div>
       </div>
+      <CharacterProfileModal
+        character={previewProfile}
+        kind="female"
+        onClose={() => setPreviewProfile(null)}
+        onStartChat={() => setPreviewProfile(null)}
+      />
     </AppLayout>
   );
 };
