@@ -60,14 +60,14 @@ const range = (seed: number, min: number, max: number) =>
 
 // --- Pools --------------------------------------------------------------------
 
-const CITIES_FEMALE = [
+const CITIES_FEMALE: readonly (readonly [string, string])[] = [
   ["Douala", "Cameroun"], ["Yaoundé", "Cameroun"], ["Abidjan", "Côte d'Ivoire"],
   ["Dakar", "Sénégal"], ["Libreville", "Gabon"], ["Kinshasa", "RDC"],
   ["Paris", "France"], ["Lyon", "France"], ["Bruxelles", "Belgique"],
   ["Montréal", "Canada"], ["Cotonou", "Bénin"], ["Lomé", "Togo"],
 ] as const;
 
-const CITIES_MALE = [
+const CITIES_MALE: readonly (readonly [string, string])[] = [
   ["Douala", "Cameroun"], ["Abidjan", "Côte d'Ivoire"], ["Dakar", "Sénégal"],
   ["Paris", "France"], ["Marseille", "France"], ["Bruxelles", "Belgique"],
   ["Libreville", "Gabon"], ["Yaoundé", "Cameroun"], ["Brazzaville", "Congo"],
