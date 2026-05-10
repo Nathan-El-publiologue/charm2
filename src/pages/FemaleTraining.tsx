@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { MALE_CHARACTERS, type MaleCharacter } from "@/data/maleCharacters";
 import { FemaleChat } from "@/components/FemaleChat";
 import { CharacterNotification } from "@/components/CharacterNotification";
+import { CharacterProfileModal } from "@/components/CharacterProfileModal";
 import { useGamification } from "@/hooks/useGamification";
 
 const getDifficultyColor = (d: string) => {
@@ -20,6 +21,7 @@ const getDifficultyColor = (d: string) => {
 const FemaleTraining = () => {
   const { addXP } = useGamification();
   const [selectedChar, setSelectedChar] = useState<MaleCharacter | null>(null);
+  const [previewChar, setPreviewChar] = useState<MaleCharacter | null>(null);
 
   const startConversation = (char: MaleCharacter) => {
     setSelectedChar(char);
@@ -53,7 +55,7 @@ const FemaleTraining = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              onClick={() => startConversation(char)}
+              onClick={() => setPreviewChar(char)}
               className="w-full glass rounded-2xl p-4 flex items-center gap-4 text-left hover:bg-secondary/30 transition-colors"
             >
               <img src={char.image} alt={char.name} className="h-14 w-14 rounded-xl object-cover shrink-0" loading="lazy" width={56} height={56} />
@@ -78,6 +80,15 @@ const FemaleTraining = () => {
           ))}
         </div>
       </div>
+      <CharacterProfileModal
+        character={previewChar}
+        kind="male"
+        onClose={() => setPreviewChar(null)}
+        onStartChat={() => {
+          if (previewChar) startConversation(previewChar);
+          setPreviewChar(null);
+        }}
+      />
     </AppLayout>
   );
 };

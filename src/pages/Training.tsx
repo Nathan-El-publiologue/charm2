@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { CHARACTERS, type CharacterProfile } from "@/data/characters";
 import { FemaleCharacterNotification } from "@/components/FemaleCharacterNotification";
+import { CharacterProfileModal } from "@/components/CharacterProfileModal";
 import { useMessageLimit } from "@/hooks/useMessageLimit";
 import type { Msg } from "@/lib/streamChat";
 import type { Json } from "@/integrations/supabase/types";
@@ -26,6 +27,7 @@ const Training = () => {
   const { user } = useAuth();
   const { remaining, isLimitReached, isNearLimit, incrementCount, openWhatsApp, dailyLimit } = useMessageLimit();
   const [selectedProfile, setSelectedProfile] = useState<CharacterProfile | null>(null);
+  const [previewProfile, setPreviewProfile] = useState<CharacterProfile | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -325,7 +327,7 @@ const Training = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             whileTap={{ scale: 0.96 }}
-                            onClick={() => startNewChat(char)}
+                            onClick={() => setPreviewProfile(char)}
                             className="glass rounded-2xl p-4 flex flex-col items-center gap-3 text-center hover:border-primary/50 transition-all"
                           >
                             <img src={char.image} alt={char.name} className="h-20 w-20 rounded-full object-cover border-2 border-primary/30" loading="lazy" width={80} height={80} />
@@ -343,6 +345,15 @@ const Training = () => {
             )}
           </AnimatePresence>
         </div>
+        <CharacterProfileModal
+          character={previewProfile}
+          kind="female"
+          onClose={() => setPreviewProfile(null)}
+          onStartChat={() => {
+            if (previewProfile) startNewChat(previewProfile);
+            setPreviewProfile(null);
+          }}
+        />
       </AppLayout>
     );
   }
@@ -356,11 +367,17 @@ const Training = () => {
           <Button variant="ghost" size="icon" onClick={() => { setSelectedProfile(null); setMessages([]); setImagePreview(null); setActiveConvoId(null); }}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <img src={selectedProfile.image} alt={selectedProfile.name} className="h-9 w-9 rounded-full object-cover border-2 border-primary/30" />
-          <div>
-            <h1 className="font-heading text-base font-bold text-foreground">{selectedProfile.name}</h1>
-            <p className="text-[10px] text-muted-foreground">{selectedProfile.description}</p>
-          </div>
+          <button
+            onClick={() => setPreviewProfile(selectedProfile)}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            aria-label={`Voir le profil de ${selectedProfile.name}`}
+          >
+            <img src={selectedProfile.image} alt={selectedProfile.name} className="h-9 w-9 rounded-full object-cover border-2 border-primary/30" />
+            <div className="text-left">
+              <h1 className="font-heading text-base font-bold text-foreground">{selectedProfile.name}</h1>
+              <p className="text-[10px] text-muted-foreground">{selectedProfile.description}</p>
+            </div>
+          </button>
           <div className="ml-auto flex items-center gap-2">
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${remaining <= 10 ? "bg-red-400/20 text-red-400" : "bg-primary/20 text-primary"}`}>
               {remaining}/{dailyLimit}
@@ -454,6 +471,12 @@ const Training = () => {
           )}
         </div>
       </div>
+      <CharacterProfileModal
+        character={previewProfile}
+        kind="female"
+        onClose={() => setPreviewProfile(null)}
+        onStartChat={() => setPreviewProfile(null)}
+      />
     </AppLayout>
   );
 };
