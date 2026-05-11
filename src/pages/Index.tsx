@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Sparkles, Dumbbell, Camera, BookHeart, BookOpen, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { useGamification } from "@/hooks/useGamification";
+import { PresenceIndicator } from "@/components/PresenceIndicator";
+import { CHARACTERS } from "@/data/characters";
+import { MALE_CHARACTERS } from "@/data/maleCharacters";
 import charmLogo from "@/assets/charm-logo.png";
 
 const quizQuestions = [
