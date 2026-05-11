@@ -371,7 +371,16 @@ const Training = () => {
       <div className="flex flex-col h-[calc(100vh-5rem)]">
         {/* Header */}
         <div className="px-4 py-3 border-b border-border/30 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => { setSelectedProfile(null); setMessages([]); setImagePreview(null); setActiveConvoId(null); }}>
+          <Button variant="ghost" size="icon" onClick={() => {
+            const userCount = messages.filter((m) => m.role === "user").length;
+            if (userCount >= 2) {
+              setFeedbackScore(scoreConversation(messages));
+              setPendingExit(true);
+              setFeedbackOpen(true);
+            } else {
+              setSelectedProfile(null); setMessages([]); setImagePreview(null); setActiveConvoId(null);
+            }
+          }}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <button
@@ -388,11 +397,27 @@ const Training = () => {
               <PresenceIndicator name={selectedProfile.name} isTyping={isLoading} />
             </div>
           </button>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                if (messages.filter((m) => m.role === "user").length === 0) {
+                  toast.info("Envoie quelques messages pour obtenir un bilan");
+                  return;
+                }
+                setFeedbackScore(scoreConversation(messages));
+                setPendingExit(false);
+                setFeedbackOpen(true);
+              }}
+              className="h-8 w-8 text-primary"
+              aria-label="Voir le bilan"
+            >
+              <Sparkles className="h-4 w-4" />
+            </Button>
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${remaining <= 10 ? "bg-red-400/20 text-red-400" : "bg-primary/20 text-primary"}`}>
               {remaining}/{dailyLimit}
             </span>
-            <span className="text-[10px] glass px-2 py-1 rounded-full text-primary">🎭 Simulation</span>
           </div>
         </div>
 
