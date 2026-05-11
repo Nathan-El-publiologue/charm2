@@ -175,6 +175,9 @@ const Index = () => {
             </Button>
           </motion.div>
 
+          {/* Featured characters carousel */}
+          <FeaturedCharacters gender={gender} onOpen={() => navigate(gender === "female" ? "/female-training" : "/training")} />
+
           {/* Feature Cards */}
           <div className="space-y-4">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">
