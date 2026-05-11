@@ -9,6 +9,8 @@ import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useGamification } from "@/hooks/useGamification";
 import { useMessageLimit } from "@/hooks/useMessageLimit";
+import { PresenceIndicator } from "@/components/PresenceIndicator";
+import { Check, CheckCheck } from "lucide-react";
 
 interface Props {
   character: MaleCharacter;
@@ -84,10 +86,13 @@ RÈGLES:
         <Button variant="ghost" size="icon" onClick={onBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <img src={character.image} alt={character.name} className="h-9 w-9 rounded-full object-cover" />
-        <div className="flex-1">
-          <p className="font-bold text-sm text-foreground">{character.name}</p>
-          <p className="text-[10px] text-muted-foreground">{character.description}</p>
+        <div className="relative">
+          <img src={character.image} alt={character.name} className="h-9 w-9 rounded-full object-cover" />
+          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-background" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-sm text-foreground truncate">{character.name}</p>
+          <PresenceIndicator name={character.name} isTyping={isLoading} />
         </div>
         <div className="flex items-center gap-1">
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${remaining <= 10 ? "bg-red-400/20 text-red-400" : "bg-primary/20 text-primary"}`}>
