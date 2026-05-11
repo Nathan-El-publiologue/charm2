@@ -306,7 +306,7 @@ const FeaturedCharacters = ({ gender, onOpen }: { gender: string; onOpen: () => 
           Tout voir →
         </button>
       </div>
-      <div className="-mx-5 px-5 flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none">
+      <div className="-mx-5 px-5 flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {list.map((c, i) => (
           <motion.button
             key={c.name}
