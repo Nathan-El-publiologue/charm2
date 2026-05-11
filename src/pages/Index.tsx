@@ -288,4 +288,48 @@ const Index = () => {
   );
 };
 
+const FeaturedCharacters = ({ gender, onOpen }: { gender: string; onOpen: () => void }) => {
+  const list = useMemo(
+    () => (gender === "female" ? MALE_CHARACTERS.slice(0, 8) : CHARACTERS.slice(0, 8)),
+    [gender]
+  );
+  return (
+    <div className="space-y-3">
+      <div className="flex items-end justify-between px-1">
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+            En vedette
+          </p>
+          <p className="text-[11px] text-muted-foreground/70 mt-0.5">Des profils actifs en ce moment</p>
+        </div>
+        <button onClick={onOpen} className="text-[11px] text-primary font-medium hover:underline">
+          Tout voir →
+        </button>
+      </div>
+      <div className="-mx-5 px-5 flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none">
+        {list.map((c, i) => (
+          <motion.button
+            key={c.name}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.05 * i, ease: "easeOut" }}
+            onClick={onOpen}
+            className="snap-start shrink-0 w-36 rounded-2xl overflow-hidden border border-border/40 bg-card text-left hover:border-primary/40 transition-all active:scale-[0.97]"
+          >
+            <div className="relative aspect-[3/4] overflow-hidden">
+              <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
+              <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/90 to-transparent" />
+              <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-background/80 shadow-[0_0_8px_hsl(142_76%_45%)]" />
+            </div>
+            <div className="p-2.5 space-y-1">
+              <p className="text-sm font-bold text-foreground truncate">{c.name}</p>
+              <PresenceIndicator name={c.name} />
+            </div>
+          </motion.button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default Index;
