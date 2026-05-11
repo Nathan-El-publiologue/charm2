@@ -12,6 +12,7 @@ import { CHARACTERS, type CharacterProfile } from "@/data/characters";
 import { FemaleCharacterNotification } from "@/components/FemaleCharacterNotification";
 import { CharacterProfileModal } from "@/components/CharacterProfileModal";
 import { useMessageLimit } from "@/hooks/useMessageLimit";
+import { PresenceIndicator } from "@/components/PresenceIndicator";
 import type { Msg } from "@/lib/streamChat";
 import type { Json } from "@/integrations/supabase/types";
 
