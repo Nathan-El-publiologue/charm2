@@ -13,6 +13,9 @@ import { FemaleCharacterNotification } from "@/components/FemaleCharacterNotific
 import { CharacterProfileModal } from "@/components/CharacterProfileModal";
 import { useMessageLimit } from "@/hooks/useMessageLimit";
 import { PresenceIndicator } from "@/components/PresenceIndicator";
+import { ConversationFeedback } from "@/components/ConversationFeedback";
+import { scoreConversation, type ConversationScore } from "@/lib/conversationScore";
+import { Sparkles } from "lucide-react";
 import type { Msg } from "@/lib/streamChat";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -37,6 +40,9 @@ const Training = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<ConversationRow[]>([]);
   const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackScore, setFeedbackScore] = useState<ConversationScore | null>(null);
+  const [pendingExit, setPendingExit] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
