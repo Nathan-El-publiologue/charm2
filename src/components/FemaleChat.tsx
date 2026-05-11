@@ -154,16 +154,29 @@ RÈGLES:
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.map((msg, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            {msg.role === "assistant" && <img src={character.image} alt={character.name} className="h-7 w-7 rounded-full object-cover shrink-0" />}
-            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === "user" ? "gradient-primary text-primary-foreground rounded-br-md" : "glass rounded-bl-md"}`}>
-              {msg.role === "assistant" ? (
-                <div className="prose prose-sm prose-invert max-w-none"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
-              ) : msg.content}
-            </div>
-          </motion.div>
-        ))}
+        {(() => {
+          const lastUserIdx = (() => { for (let k = messages.length - 1; k >= 0; k--) if (messages[k].role === "user") return k; return -1; })();
+          const seen = !isLoading && lastUserIdx !== -1 && messages.slice(lastUserIdx + 1).some((m) => m.role === "assistant");
+          return messages.map((msg, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              {msg.role === "assistant" && <img src={character.image} alt={character.name} className="h-7 w-7 rounded-full object-cover shrink-0" />}
+              <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === "user" ? "gradient-primary text-primary-foreground rounded-br-md" : "glass rounded-bl-md"}`}>
+                {msg.role === "assistant" ? (
+                  <div className="prose prose-sm prose-invert max-w-none"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                ) : (
+                  <div className="flex items-end gap-1.5">
+                    <span>{msg.content}</span>
+                    {i === lastUserIdx && (
+                      seen
+                        ? <CheckCheck className="h-3 w-3 text-primary-foreground/80 shrink-0" />
+                        : <Check className="h-3 w-3 text-primary-foreground/60 shrink-0" />
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ));
+        })()}
         {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
           <div className="flex gap-2">
             <img src={character.image} alt="" className="h-7 w-7 rounded-full object-cover" />
