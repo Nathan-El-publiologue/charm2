@@ -372,10 +372,13 @@ const Training = () => {
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             aria-label={`Voir le profil de ${selectedProfile.name}`}
           >
-            <img src={selectedProfile.image} alt={selectedProfile.name} className="h-9 w-9 rounded-full object-cover border-2 border-primary/30" />
-            <div className="text-left">
-              <h1 className="font-heading text-base font-bold text-foreground">{selectedProfile.name}</h1>
-              <p className="text-[10px] text-muted-foreground">{selectedProfile.description}</p>
+            <div className="relative">
+              <img src={selectedProfile.image} alt={selectedProfile.name} className="h-9 w-9 rounded-full object-cover border-2 border-primary/30" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-background" />
+            </div>
+            <div className="text-left min-w-0">
+              <h1 className="font-heading text-base font-bold text-foreground truncate">{selectedProfile.name}</h1>
+              <PresenceIndicator name={selectedProfile.name} isTyping={isLoading} />
             </div>
           </button>
           <div className="ml-auto flex items-center gap-2">
