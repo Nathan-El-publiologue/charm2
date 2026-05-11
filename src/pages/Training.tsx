@@ -521,6 +521,19 @@ const Training = () => {
         onClose={() => setPreviewProfile(null)}
         onStartChat={() => setPreviewProfile(null)}
       />
+      <ConversationFeedback
+        open={feedbackOpen}
+        score={feedbackScore}
+        characterName={selectedProfile?.name}
+        onClose={() => {
+          setFeedbackOpen(false);
+          if (pendingExit) {
+            setSelectedProfile(null); setMessages([]); setImagePreview(null); setActiveConvoId(null);
+            setPendingExit(false);
+          }
+        }}
+        onContinue={() => { setFeedbackOpen(false); setPendingExit(false); }}
+      />
     </AppLayout>
   );
 };
