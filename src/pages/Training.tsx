@@ -400,17 +400,26 @@ const Training = () => {
               </p>
             </div>
           )}
-          {messages.map((msg, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              {msg.role === "assistant" && (
-                <img src={selectedProfile.image} alt={selectedProfile.name} className="h-7 w-7 rounded-full object-cover shrink-0 border border-primary/20" />
-              )}
-              <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${msg.role === "user" ? "gradient-primary text-primary-foreground rounded-br-md" : "glass rounded-bl-md text-foreground"}`}>
-                {msg.content}
-              </div>
-            </motion.div>
-          ))}
+          {(() => {
+            const lastUserIdx = (() => { for (let k = messages.length - 1; k >= 0; k--) if (messages[k].role === "user") return k; return -1; })();
+            const seen = !isLoading && lastUserIdx !== -1 && messages.slice(lastUserIdx + 1).some((m) => m.role === "assistant");
+            return messages.map((msg, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                {msg.role === "assistant" && (
+                  <img src={selectedProfile.image} alt={selectedProfile.name} className="h-7 w-7 rounded-full object-cover shrink-0 border border-primary/20" />
+                )}
+                <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${msg.role === "user" ? "gradient-primary text-primary-foreground rounded-br-md" : "glass rounded-bl-md text-foreground"}`}>
+                  {msg.role === "user" && i === lastUserIdx ? (
+                    <span className="inline-flex items-end gap-1.5">
+                      <span>{msg.content}</span>
+                      <span className="text-[10px] opacity-70 shrink-0">{seen ? "✓✓" : "✓"}</span>
+                    </span>
+                  ) : msg.content}
+                </div>
+              </motion.div>
+            ));
+          })()}
           {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
             <div className="flex gap-2">
               <img src={selectedProfile.image} alt={selectedProfile.name} className="h-7 w-7 rounded-full object-cover border border-primary/20" />
