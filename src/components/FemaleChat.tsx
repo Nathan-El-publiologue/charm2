@@ -9,6 +9,8 @@ import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useGamification } from "@/hooks/useGamification";
 import { useMessageLimit } from "@/hooks/useMessageLimit";
+import { PresenceIndicator } from "@/components/PresenceIndicator";
+import { Check, CheckCheck } from "lucide-react";
 
 interface Props {
   character: MaleCharacter;
@@ -84,10 +86,13 @@ RÈGLES:
         <Button variant="ghost" size="icon" onClick={onBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <img src={character.image} alt={character.name} className="h-9 w-9 rounded-full object-cover" />
-        <div className="flex-1">
-          <p className="font-bold text-sm text-foreground">{character.name}</p>
-          <p className="text-[10px] text-muted-foreground">{character.description}</p>
+        <div className="relative">
+          <img src={character.image} alt={character.name} className="h-9 w-9 rounded-full object-cover" />
+          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-background" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-sm text-foreground truncate">{character.name}</p>
+          <PresenceIndicator name={character.name} isTyping={isLoading} />
         </div>
         <div className="flex items-center gap-1">
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${remaining <= 10 ? "bg-red-400/20 text-red-400" : "bg-primary/20 text-primary"}`}>
@@ -149,16 +154,29 @@ RÈGLES:
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.map((msg, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            {msg.role === "assistant" && <img src={character.image} alt={character.name} className="h-7 w-7 rounded-full object-cover shrink-0" />}
-            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === "user" ? "gradient-primary text-primary-foreground rounded-br-md" : "glass rounded-bl-md"}`}>
-              {msg.role === "assistant" ? (
-                <div className="prose prose-sm prose-invert max-w-none"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
-              ) : msg.content}
-            </div>
-          </motion.div>
-        ))}
+        {(() => {
+          const lastUserIdx = (() => { for (let k = messages.length - 1; k >= 0; k--) if (messages[k].role === "user") return k; return -1; })();
+          const seen = !isLoading && lastUserIdx !== -1 && messages.slice(lastUserIdx + 1).some((m) => m.role === "assistant");
+          return messages.map((msg, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              {msg.role === "assistant" && <img src={character.image} alt={character.name} className="h-7 w-7 rounded-full object-cover shrink-0" />}
+              <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === "user" ? "gradient-primary text-primary-foreground rounded-br-md" : "glass rounded-bl-md"}`}>
+                {msg.role === "assistant" ? (
+                  <div className="prose prose-sm prose-invert max-w-none"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                ) : (
+                  <div className="flex items-end gap-1.5">
+                    <span>{msg.content}</span>
+                    {i === lastUserIdx && (
+                      seen
+                        ? <CheckCheck className="h-3 w-3 text-primary-foreground/80 shrink-0" />
+                        : <Check className="h-3 w-3 text-primary-foreground/60 shrink-0" />
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ));
+        })()}
         {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
           <div className="flex gap-2">
             <img src={character.image} alt="" className="h-7 w-7 rounded-full object-cover" />
