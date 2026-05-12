@@ -153,5 +153,6 @@ export function scoreConversation(messages: Msg[]): ConversationScore {
     improvements: improvements.slice(0, 3),
     tip,
     exampleMessages,
+    weakestAxis: weakest as Axis,
   };
 }
