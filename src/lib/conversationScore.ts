@@ -29,6 +29,10 @@ export function scoreConversation(messages: Msg[]): ConversationScore {
       communication: 0, confidence: 0, sincerity: 0, overall: 0,
       strengths: [], improvements: ["Envoie au moins quelques messages pour obtenir un retour"],
       tip: "Lance la conversation avec une question ouverte ou une observation sincère.",
+      exampleMessages: [
+        "Salut ! J'ai vu ton profil et ta passion pour [voyage/musique/sport] m'a intrigué — c'est quoi ton meilleur souvenir lié à ça ?",
+        "Hey, question random : si tu pouvais reprendre un dîner avec n'importe qui demain soir, ce serait avec qui et pourquoi ?",
+      ],
     };
   }
 
@@ -42,21 +46,18 @@ export function scoreConversation(messages: Msg[]): ConversationScore {
   const emojiCount = (text.match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu) || []).length;
   const personalRefs = (text.match(/\b(je|moi|mon|ma|mes)\b/g) || []).length;
 
-  // Communication: balance of length, questions, variety
   let communication = 50
     + Math.min(20, (questionCount / total) * 60)
     + Math.min(15, (openCount / total) * 40)
     + (avgLen > 25 && avgLen < 220 ? 10 : avgLen >= 220 ? -5 : -10)
     + Math.min(8, emojiCount * 2);
 
-  // Confidence: low hedging, decent length, not too many ?
   let confidence = 65
     - Math.min(35, hedgeCount * 6)
     + (avgLen > 40 ? 10 : -5)
     - (questionCount / total > 0.7 ? 12 : 0)
     + Math.min(10, exclamCount * 2);
 
-  // Sincerity: personal refs, compliments, low emoji spam
   let sincerity = 55
     + Math.min(20, complimentCount * 5)
     + Math.min(20, (personalRefs / total) * 8)
@@ -84,18 +85,41 @@ export function scoreConversation(messages: Msg[]): ConversationScore {
   if (complimentCount === 0) improvements.push("Glisse un compliment précis et sincère sur quelque chose de spécifique");
   if (emojiCount > total * 3) improvements.push("Limite les emojis, ils diluent ton message");
 
-  const tips = [
-    "Pour la prochaine fois, mémorise un détail de la conversation et réfère-y plus tard, ça crée de la complicité.",
-    "Alterne questions et affirmations : 1 question pour 2 messages c'est l'idéal.",
-    "Sois précis dans tes compliments. « J'aime ton humour » > « tu es géniale ».",
-    "Quand tu hésites, ne le montre pas. Fais une affirmation puis une question ouverte.",
-  ];
-  const tip = tips[(overall + total) % tips.length];
+  const axes = [
+    { key: "communication", value: communication },
+    { key: "confidence", value: confidence },
+    { key: "sincerity", value: sincerity },
+  ].sort((a, b) => a.value - b.value);
+  const weakest = axes[0].key;
+
+  let tip = "";
+  let exampleMessages: string[] = [];
+
+  if (weakest === "communication") {
+    tip = "Ta priorité : relancer avec des questions ouvertes qui invitent à raconter une histoire. Évite les « ça va ? » et préfère des questions qui demandent une vraie réponse.";
+    exampleMessages = [
+      "Tu m'as parlé de ton job tout à l'heure — c'est quoi le truc qui te fait vraiment kiffer là-dedans ?",
+      "Raconte-moi un truc que tu as fait récemment et qui t'a fait sortir de ta zone de confort.",
+    ];
+  } else if (weakest === "confidence") {
+    tip = "Ta priorité : assume ce que tu dis. Supprime les « peut-être », « désolé », « je sais pas » et remplace-les par des affirmations claires suivies d'une question.";
+    exampleMessages = [
+      "Là j'ai envie d'un verre ce week-end. Tu connais un endroit cool dans le coin ?",
+      "Franchement ton dernier message m'a fait sourire. Tu fais quoi de beau demain soir ?",
+    ];
+  } else {
+    tip = "Ta priorité : montre une attention sincère. Reprends un détail précis qu'on t'a dit et glisse un compliment spécifique plutôt que générique.";
+    exampleMessages = [
+      "J'aime ta façon de raconter les choses, on dirait que tu vis chaque scène à fond.",
+      "Tu m'as cité [son film/groupe préféré] — qu'est-ce qui t'a marqué là-dedans ?",
+    ];
+  }
 
   return {
     communication, confidence, sincerity, overall,
     strengths: strengths.slice(0, 3),
     improvements: improvements.slice(0, 3),
     tip,
+    exampleMessages,
   };
 }
