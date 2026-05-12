@@ -97,23 +97,12 @@ export function scoreConversation(messages: Msg[]): ConversationScore {
 
   if (weakest === "communication") {
     tip = "Ta priorité : relancer avec des questions ouvertes qui invitent à raconter une histoire. Évite les « ça va ? » et préfère des questions qui demandent une vraie réponse.";
-    exampleMessages = [
-      "Tu m'as parlé de ton job tout à l'heure — c'est quoi le truc qui te fait vraiment kiffer là-dedans ?",
-      "Raconte-moi un truc que tu as fait récemment et qui t'a fait sortir de ta zone de confort.",
-    ];
   } else if (weakest === "confidence") {
     tip = "Ta priorité : assume ce que tu dis. Supprime les « peut-être », « désolé », « je sais pas » et remplace-les par des affirmations claires suivies d'une question.";
-    exampleMessages = [
-      "Là j'ai envie d'un verre ce week-end. Tu connais un endroit cool dans le coin ?",
-      "Franchement ton dernier message m'a fait sourire. Tu fais quoi de beau demain soir ?",
-    ];
   } else {
     tip = "Ta priorité : montre une attention sincère. Reprends un détail précis qu'on t'a dit et glisse un compliment spécifique plutôt que générique.";
-    exampleMessages = [
-      "J'aime ta façon de raconter les choses, on dirait que tu vis chaque scène à fond.",
-      "Tu m'as cité [son film/groupe préféré] — qu'est-ce qui t'a marqué là-dedans ?",
-    ];
   }
+  exampleMessages = generateExamples(weakest as Axis, 0);
 
   return {
     communication, confidence, sincerity, overall,
