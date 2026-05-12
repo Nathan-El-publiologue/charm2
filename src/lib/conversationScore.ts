@@ -9,7 +9,49 @@ export type ConversationScore = {
   improvements: string[];
   tip: string;
   exampleMessages: string[];
+  weakestAxis: Axis;
 };
+
+export type Axis = "communication" | "confidence" | "sincerity";
+
+const EXAMPLE_POOL: Record<Axis, string[]> = {
+  communication: [
+    "Tu m'as parlé de ton job tout à l'heure — c'est quoi le truc qui te fait vraiment kiffer là-dedans ?",
+    "Raconte-moi un truc que tu as fait récemment et qui t'a fait sortir de ta zone de confort.",
+    "Si demain tu pouvais tout poser pendant un mois, tu partirais où et tu ferais quoi ?",
+    "C'est quoi le dernier truc qui t'a vraiment fait rire aux éclats ?",
+    "Quel est le souvenir d'enfance qui te fait encore sourire aujourd'hui ?",
+    "Tu préfères les soirées qui se finissent à 2h du mat ou les matins tranquilles avec un café ? Pourquoi ?",
+    "Y'a un projet que tu repousses depuis longtemps ? Raconte-moi.",
+    "C'est quoi le truc le plus spontané que tu aies fait cette année ?",
+  ],
+  confidence: [
+    "Là j'ai envie d'un verre ce week-end. Tu connais un endroit cool dans le coin ?",
+    "Franchement ton dernier message m'a fait sourire. Tu fais quoi de beau demain soir ?",
+    "On se cale un truc cette semaine, je te laisse choisir le jour.",
+    "J'aime bien ta façon de répondre, ça change. On en reparle autour d'un café ?",
+    "Je te propose un deal : tu me dis ton resto préféré, je m'occupe de la réservation.",
+    "Tu m'intrigues. Dis-moi un truc que la plupart des gens ignorent sur toi.",
+    "Pas envie de tourner autour du pot : ça te dirait qu'on se voie pour de vrai ?",
+    "Je te préviens, je vais te poser une question directe — t'es prête ?",
+  ],
+  sincerity: [
+    "J'aime ta façon de raconter les choses, on dirait que tu vis chaque scène à fond.",
+    "Tu m'as cité [son film/groupe préféré] — qu'est-ce qui t'a marqué là-dedans ?",
+    "Ce que tu as dit sur [sujet] m'a vraiment fait réfléchir, j'avais jamais vu ça comme ça.",
+    "J'ai remarqué un détail dans ton message qui m'a touché, c'est rare.",
+    "Tu as une manière de parler de ce que tu aimes qui est vraiment communicative.",
+    "Merci pour ta réponse honnête, ça fait du bien des échanges comme ça.",
+    "Y'a un truc dans ton humour qui me fait baisser ma garde, je l'avoue.",
+    "Ce que tu viens de partager, c'est précieux. Comment tu en es arrivée là ?",
+  ],
+};
+
+export function generateExamples(axis: Axis, seed = 0): string[] {
+  const pool = EXAMPLE_POOL[axis];
+  const start = Math.floor(seed) % pool.length;
+  return [pool[start % pool.length], pool[(start + 1) % pool.length]];
+}
 
 const QUESTION_RE = /\?/;
 const HEDGE_WORDS = ["peut-être", "désolé", "je sais pas", "je sais pas trop", "j'sais pas", "euh", "bah", "genre"];
@@ -33,6 +75,7 @@ export function scoreConversation(messages: Msg[]): ConversationScore {
         "Salut ! J'ai vu ton profil et ta passion pour [voyage/musique/sport] m'a intrigué — c'est quoi ton meilleur souvenir lié à ça ?",
         "Hey, question random : si tu pouvais reprendre un dîner avec n'importe qui demain soir, ce serait avec qui et pourquoi ?",
       ],
+      weakestAxis: "communication",
     };
   }
 
@@ -97,23 +140,12 @@ export function scoreConversation(messages: Msg[]): ConversationScore {
 
   if (weakest === "communication") {
     tip = "Ta priorité : relancer avec des questions ouvertes qui invitent à raconter une histoire. Évite les « ça va ? » et préfère des questions qui demandent une vraie réponse.";
-    exampleMessages = [
-      "Tu m'as parlé de ton job tout à l'heure — c'est quoi le truc qui te fait vraiment kiffer là-dedans ?",
-      "Raconte-moi un truc que tu as fait récemment et qui t'a fait sortir de ta zone de confort.",
-    ];
   } else if (weakest === "confidence") {
     tip = "Ta priorité : assume ce que tu dis. Supprime les « peut-être », « désolé », « je sais pas » et remplace-les par des affirmations claires suivies d'une question.";
-    exampleMessages = [
-      "Là j'ai envie d'un verre ce week-end. Tu connais un endroit cool dans le coin ?",
-      "Franchement ton dernier message m'a fait sourire. Tu fais quoi de beau demain soir ?",
-    ];
   } else {
     tip = "Ta priorité : montre une attention sincère. Reprends un détail précis qu'on t'a dit et glisse un compliment spécifique plutôt que générique.";
-    exampleMessages = [
-      "J'aime ta façon de raconter les choses, on dirait que tu vis chaque scène à fond.",
-      "Tu m'as cité [son film/groupe préféré] — qu'est-ce qui t'a marqué là-dedans ?",
-    ];
   }
+  exampleMessages = generateExamples(weakest as Axis, 0);
 
   return {
     communication, confidence, sincerity, overall,
@@ -121,5 +153,6 @@ export function scoreConversation(messages: Msg[]): ConversationScore {
     improvements: improvements.slice(0, 3),
     tip,
     exampleMessages,
+    weakestAxis: weakest as Axis,
   };
 }

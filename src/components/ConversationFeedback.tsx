@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, TrendingUp, Sparkles, Target, MessageCircle, Heart, Shield, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { X, TrendingUp, Sparkles, Target, MessageCircle, Heart, Shield, Copy, Check, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import type { ConversationScore } from "@/lib/conversationScore";
+import { generateExamples, type ConversationScore } from "@/lib/conversationScore";
 
 type Props = {
   open: boolean;
@@ -20,6 +20,23 @@ const bar = (n: number) =>
 
 export const ConversationFeedback = ({ open, score, characterName, onClose, onContinue }: Props) => {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [examples, setExamples] = useState<string[]>(score?.exampleMessages ?? []);
+  const [seed, setSeed] = useState(0);
+  const [regenSpin, setRegenSpin] = useState(false);
+
+  useEffect(() => {
+    setExamples(score?.exampleMessages ?? []);
+    setSeed(0);
+  }, [score]);
+
+  const regenerate = () => {
+    if (!score) return;
+    const next = seed + 2;
+    setSeed(next);
+    setExamples(generateExamples(score.weakestAxis, next));
+    setRegenSpin(true);
+    setTimeout(() => setRegenSpin(false), 600);
+  };
   const copy = async (text: string, i: number) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -135,17 +152,25 @@ export const ConversationFeedback = ({ open, score, characterName, onClose, onCo
             </div>
 
             {/* Example messages */}
-            {score.exampleMessages?.length > 0 && (
+            {examples.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-widest text-primary flex items-center gap-1.5">
-                  <MessageCircle className="h-3.5 w-3.5" /> À tester la prochaine fois
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-primary flex items-center gap-1.5">
+                    <MessageCircle className="h-3.5 w-3.5" /> À tester la prochaine fois
+                  </p>
+                  <button
+                    onClick={regenerate}
+                    className="text-[10px] font-semibold uppercase tracking-wider text-primary/90 hover:text-primary flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-primary/10 transition-colors"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${regenSpin ? "animate-spin" : ""}`} /> Autres exemples
+                  </button>
+                </div>
                 <div className="space-y-2">
-                  {score.exampleMessages.map((msg, i) => (
+                  {examples.map((msg, i) => (
                     <motion.div
-                      key={i}
+                      key={`${seed}-${i}`}
                       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 + i * 0.08 }}
+                      transition={{ delay: i * 0.08 }}
                       className="rounded-2xl border border-border/60 bg-secondary/40 p-3 flex gap-2 items-start"
                     >
                       <p className="text-xs text-foreground/90 leading-relaxed flex-1 italic">« {msg} »</p>
