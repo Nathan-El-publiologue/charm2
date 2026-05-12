@@ -75,6 +75,7 @@ export function scoreConversation(messages: Msg[]): ConversationScore {
         "Salut ! J'ai vu ton profil et ta passion pour [voyage/musique/sport] m'a intrigué — c'est quoi ton meilleur souvenir lié à ça ?",
         "Hey, question random : si tu pouvais reprendre un dîner avec n'importe qui demain soir, ce serait avec qui et pourquoi ?",
       ],
+      weakestAxis: "communication",
     };
   }
 
