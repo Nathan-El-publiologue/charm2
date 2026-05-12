@@ -9,6 +9,7 @@ export type ConversationScore = {
   improvements: string[];
   tip: string;
   exampleMessages: string[];
+  weakestAxis: Axis;
 };
 
 export type Axis = "communication" | "confidence" | "sincerity";
