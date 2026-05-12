@@ -19,6 +19,17 @@ const bar = (n: number) =>
   n >= 80 ? "from-green-400 to-emerald-500" : n >= 60 ? "from-primary to-pink-500" : n >= 40 ? "from-yellow-400 to-orange-500" : "from-red-400 to-rose-500";
 
 export const ConversationFeedback = ({ open, score, characterName, onClose, onContinue }: Props) => {
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const copy = async (text: string, i: number) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIdx(i);
+      toast.success("Message copié");
+      setTimeout(() => setCopiedIdx((c) => (c === i ? null : c)), 1800);
+    } catch {
+      toast.error("Impossible de copier");
+    }
+  };
   return (
     <AnimatePresence>
       {open && score && (
