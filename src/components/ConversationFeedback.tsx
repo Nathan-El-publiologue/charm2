@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, TrendingUp, Sparkles, Target, MessageCircle, Heart, Shield } from "lucide-react";
+import { X, TrendingUp, Sparkles, Target, MessageCircle, Heart, Shield, Copy, Check } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { ConversationScore } from "@/lib/conversationScore";
 
