@@ -20,6 +20,23 @@ const bar = (n: number) =>
 
 export const ConversationFeedback = ({ open, score, characterName, onClose, onContinue }: Props) => {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [examples, setExamples] = useState<string[]>(score?.exampleMessages ?? []);
+  const [seed, setSeed] = useState(0);
+  const [regenSpin, setRegenSpin] = useState(false);
+
+  useEffect(() => {
+    setExamples(score?.exampleMessages ?? []);
+    setSeed(0);
+  }, [score]);
+
+  const regenerate = () => {
+    if (!score) return;
+    const next = seed + 2;
+    setSeed(next);
+    setExamples(generateExamples(score.weakestAxis, next));
+    setRegenSpin(true);
+    setTimeout(() => setRegenSpin(false), 600);
+  };
   const copy = async (text: string, i: number) => {
     try {
       await navigator.clipboard.writeText(text);
