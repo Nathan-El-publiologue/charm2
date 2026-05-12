@@ -8,6 +8,7 @@ export type ConversationScore = {
   strengths: string[];
   improvements: string[];
   tip: string;
+  exampleMessages: string[];
 };
 
 const QUESTION_RE = /\?/;
