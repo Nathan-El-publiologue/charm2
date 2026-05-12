@@ -134,6 +134,34 @@ export const ConversationFeedback = ({ open, score, characterName, onClose, onCo
               <p className="text-xs text-foreground/90 leading-relaxed">{score.tip}</p>
             </div>
 
+            {/* Example messages */}
+            {score.exampleMessages?.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-primary flex items-center gap-1.5">
+                  <MessageCircle className="h-3.5 w-3.5" /> À tester la prochaine fois
+                </p>
+                <div className="space-y-2">
+                  {score.exampleMessages.map((msg, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + i * 0.08 }}
+                      className="rounded-2xl border border-border/60 bg-secondary/40 p-3 flex gap-2 items-start"
+                    >
+                      <p className="text-xs text-foreground/90 leading-relaxed flex-1 italic">« {msg} »</p>
+                      <button
+                        onClick={() => copy(msg, i)}
+                        className="shrink-0 p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                        aria-label="Copier"
+                      >
+                        {copiedIdx === i ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2 pt-1">
               <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl">Fermer</Button>
               <Button onClick={onContinue} className="flex-1 gradient-primary text-primary-foreground rounded-xl">
