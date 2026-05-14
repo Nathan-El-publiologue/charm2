@@ -5,7 +5,7 @@ import { Heart, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { isNativePlatform, nativeGoogleLogin } from "@/lib/capacitorAuth";
@@ -55,11 +55,15 @@ const Login = () => {
         if (result.error) throw result.error;
         navigate("/");
       } else {
-        // Web: use Lovable managed OAuth
-        const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: window.location.origin,
+        // Web: use Supabase OAuth directly so it works on any domain (Vercel, custom, etc.)
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+            queryParams: { prompt: "select_account" },
+          },
         });
-        if (result.error) throw result.error;
+        if (error) throw error;
       }
     } catch (err: any) {
       toast.error(err.message || "Erreur de connexion Google");
