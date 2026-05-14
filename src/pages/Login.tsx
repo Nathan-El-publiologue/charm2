@@ -12,6 +12,41 @@ import { useAuth } from "@/contexts/AuthContext";
 import { isNativePlatform, nativeGoogleLogin } from "@/lib/capacitorAuth";
 import { Navigate } from "react-router-dom";
 
+type GoogleCredentialResponse = {
+  credential?: string;
+};
+
+type GoogleAccountsId = {
+  initialize: (config: {
+    client_id: string;
+    callback: (response: GoogleCredentialResponse) => void;
+    auto_select?: boolean;
+    cancel_on_tap_outside?: boolean;
+    ux_mode?: "popup" | "redirect";
+  }) => void;
+  prompt: () => void;
+  cancel: () => void;
+  renderButton: (parent: HTMLElement, options: {
+    type?: "standard" | "icon";
+    theme?: "outline" | "filled_blue" | "filled_black";
+    size?: "large" | "medium" | "small";
+    text?: "signin_with" | "signup_with" | "continue_with" | "signin";
+    shape?: "rectangular" | "pill" | "circle" | "square";
+    logo_alignment?: "left" | "center";
+    width?: number;
+  }) => void;
+};
+
+declare global {
+  interface Window {
+    google?: {
+      accounts?: {
+        id?: GoogleAccountsId;
+      };
+    };
+  }
+}
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 const GIS_SCRIPT_ID = "google-identity-services-sdk";
 
