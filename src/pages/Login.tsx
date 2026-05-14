@@ -5,7 +5,6 @@ import { Heart, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -144,13 +143,15 @@ const Login = () => {
         if (result.error) throw result.error;
         navigate("/", { replace: true });
       } else {
-        // Web fallback: use Lovable Cloud managed OAuth instead of the broken direct callback.
-        const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: window.location.origin,
-          extraParams: { prompt: "select_account" },
+        // Web fallback for Vercel: avoid /~oauth because Vercel serves it as an app route.
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+            queryParams: { prompt: "select_account" },
+          },
         });
-        if (result.error) throw result.error;
-        if (!result.redirected) navigate("/", { replace: true });
+        if (error) throw error;
       }
     } catch (err: any) {
       toast.error(err.message || "Erreur de connexion Google");
