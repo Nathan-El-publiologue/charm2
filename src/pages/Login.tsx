@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { isNativePlatform, nativeGoogleLogin } from "@/lib/capacitorAuth";
 import { Navigate } from "react-router-dom";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+const GIS_SCRIPT_ID = "google-identity-services-sdk";
 
 const Login = () => {
   const { user, loading } = useAuth();
@@ -19,6 +23,90 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
+  const [gisReady, setGisReady] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+  const googleInitializedRef = useRef(false);
+
+  const handleGoogleCredential = useCallback(async (response: GoogleCredentialResponse) => {
+    if (!response.credential) {
+      toast.error("Aucun jeton Google reçu");
+      return;
+    }
+
+    setGoogleSubmitting(true);
+    try {
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: response.credential,
+      });
+
+      if (error) throw error;
+      navigate("/", { replace: true });
+    } catch (err: any) {
+      toast.error(err.message || "Erreur de connexion Google One Tap");
+    } finally {
+      setGoogleSubmitting(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (loading || user || isNativePlatform() || !GOOGLE_CLIENT_ID) return;
+
+    let cancelled = false;
+
+    const initializeGoogleIdentity = () => {
+      if (cancelled || googleInitializedRef.current || !window.google?.accounts?.id) return;
+
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        ux_mode: "popup",
+      });
+
+      googleInitializedRef.current = true;
+      setGisReady(true);
+      window.google.accounts.id.prompt();
+    };
+
+    const existingScript = document.getElementById(GIS_SCRIPT_ID) as HTMLScriptElement | null;
+
+    if (existingScript) {
+      existingScript.addEventListener("load", initializeGoogleIdentity, { once: true });
+      initializeGoogleIdentity();
+    } else {
+      const script = document.createElement("script");
+      script.id = GIS_SCRIPT_ID;
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleIdentity;
+      script.onerror = () => toast.error("Google Identity Services est indisponible");
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      cancelled = true;
+      window.google?.accounts?.id?.cancel();
+    };
+  }, [handleGoogleCredential, loading, user]);
+
+  useEffect(() => {
+    if (!gisReady || !googleButtonRef.current || !window.google?.accounts?.id) return;
+
+    googleButtonRef.current.innerHTML = "";
+    window.google.accounts.id.renderButton(googleButtonRef.current, {
+      type: "standard",
+      theme: "outline",
+      size: "large",
+      text: "continue_with",
+      shape: "rectangular",
+      logo_alignment: "left",
+      width: Math.min(400, googleButtonRef.current.offsetWidth || 320),
+    });
+  }, [gisReady]);
 
   if (loading) return null;
   if (user) return <Navigate to="/" replace />;
@@ -48,25 +136,25 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
+    setGoogleSubmitting(true);
     try {
       if (isNativePlatform()) {
         // Native: use system browser + deep link callback
         const result = await nativeGoogleLogin();
         if (result.error) throw result.error;
-        navigate("/");
+        navigate("/", { replace: true });
       } else {
-        // Web: use Supabase OAuth directly so it works on any domain (Vercel, custom, etc.)
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-            queryParams: { prompt: "select_account" },
-          },
+        // Web fallback: use Lovable Cloud managed OAuth instead of the broken direct callback.
+        const result = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin,
+          extraParams: { prompt: "select_account" },
         });
-        if (error) throw error;
+        if (result.error) throw result.error;
+        if (!result.redirected) navigate("/", { replace: true });
       }
     } catch (err: any) {
       toast.error(err.message || "Erreur de connexion Google");
+      setGoogleSubmitting(false);
     }
   };
 
