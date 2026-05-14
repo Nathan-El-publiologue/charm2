@@ -5,7 +5,7 @@ import { Heart, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { isNativePlatform, nativeGoogleLogin } from "@/lib/capacitorAuth";
