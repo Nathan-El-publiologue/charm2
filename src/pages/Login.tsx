@@ -55,11 +55,15 @@ const Login = () => {
         if (result.error) throw result.error;
         navigate("/");
       } else {
-        // Web: use Lovable managed OAuth
-        const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: window.location.origin,
+        // Web: use Supabase OAuth directly so it works on any domain (Vercel, custom, etc.)
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+            queryParams: { prompt: "select_account" },
+          },
         });
-        if (result.error) throw result.error;
+        if (error) throw error;
       }
     } catch (err: any) {
       toast.error(err.message || "Erreur de connexion Google");
